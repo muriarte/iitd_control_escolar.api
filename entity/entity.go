@@ -21,6 +21,7 @@ func StringToID(s string) (ID, error) {
 	id, err := strconv.Atoi(s)
 	return ID(id), err
 }
+
 //func StringToID(s string) (ID, error) {
 //	id, err := uuid.Parse(s)
 //	return ID(id), err

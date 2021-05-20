@@ -29,7 +29,7 @@ func (r *StudentSQLite) Create(e *entity.Student) (entity.ID, error) {
 	if err != nil {
 		return e.ID, err
 	}
-	_, err = stmt.Exec(
+	rsp, err := stmt.Exec(
 		e.Nombres,
 		e.Apellidos,
 		e.Nacimiento,
@@ -57,7 +57,12 @@ func (r *StudentSQLite) Create(e *entity.Student) (entity.ID, error) {
 	if err != nil {
 		return e.ID, err
 	}
-	return e.ID, nil
+
+	lastID, err:=rsp.LastInsertId()
+	if err!=nil {
+		return e.ID, err
+	}
+	return entity.ID(lastID), nil
 }
 
 //Get a student

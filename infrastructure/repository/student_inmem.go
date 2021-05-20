@@ -1,4 +1,4 @@
-package student
+package repository
 
 import (
 	"fmt"
@@ -11,8 +11,8 @@ type inmem struct {
 	m map[entity.ID]*entity.Student
 }
 
-//newInmem create new repository
-func newInmem() *inmem {
+//NewStudentInmem create new repository
+func NewStudentInmem() *inmem {
 	var m = map[entity.ID]*entity.Student{}
 	return &inmem{
 		m: m,
@@ -21,6 +21,16 @@ func newInmem() *inmem {
 
 //Create an student
 func (r *inmem) Create(e *entity.Student) (entity.ID, error) {
+	// Gets a new ID
+	var max = 0
+	for k, _ := range r.m {
+		if k > max {
+			max = k
+		}
+	}
+	max += 1
+
+	e.ID=max
 	r.m[e.ID] = e
 	return e.ID, nil
 }
@@ -72,6 +82,11 @@ func (r *inmem) Delete(id entity.ID) error {
 	if r.m[id] == nil {
 		return fmt.Errorf("not found")
 	}
+
+	//if r.m[id].Books.length >0 {
+	//	return "cannot Be Deleted"
+	//}
+
 	r.m[id] = nil
 	return nil
 }
