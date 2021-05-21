@@ -36,7 +36,9 @@ var db *sql.DB
 func main() {
 
 	db = GetSqliteConnection()
-	defer db.Close()
+	defer func(db *sql.DB) {
+		_ = db.Close()
+	}(db)
 
 	// Build http handlers dependencies
 	studentRepo := repository.NewStudentSQLite(db) //repository.NewStudentMySQL(db)

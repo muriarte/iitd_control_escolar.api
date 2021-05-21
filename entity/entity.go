@@ -10,7 +10,7 @@ type ID = int
 
 //NewID create a new entity ID
 func NewID() ID {
-	return ID(0)
+	return 0
 }
 //func NewID() ID {
 //	return ID(uuid.New())
@@ -19,7 +19,7 @@ func NewID() ID {
 //StringToID convert a string to an entity ID
 func StringToID(s string) (ID, error) {
 	id, err := strconv.Atoi(s)
-	return ID(id), err
+	return id, err
 }
 
 //func StringToID(s string) (ID, error) {

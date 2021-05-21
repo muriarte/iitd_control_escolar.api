@@ -20,5 +20,5 @@ func (p *FakePassword) Compare(p1, p2 string) error {
 	if p1 == p2 {
 		return nil
 	}
-	return errors.New("Invalid password")
+	return errors.New("invalid password")
 }

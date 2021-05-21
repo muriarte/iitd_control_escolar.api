@@ -101,7 +101,7 @@ func Test_createStudent(t *testing.T) {
 	assert.Equal(t, http.StatusCreated, resp.StatusCode)
 
 	var u *presenter.Student
-	json.NewDecoder(resp.Body).Decode(&u)
+	_ = json.NewDecoder(resp.Body).Decode(&u)
 	assert.Equal(t, "Pepe Potamo", fmt.Sprintf("%s %s", u.Nombres, u.Apellidos))
 }
 
@@ -129,7 +129,7 @@ func Test_getStudent(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	var d *presenter.Student
-	json.NewDecoder(res.Body).Decode(&d)
+	_ = json.NewDecoder(res.Body).Decode(&d)
 	assert.NotNil(t, d)
 	assert.Equal(t, u.ID, d.ID)
 }

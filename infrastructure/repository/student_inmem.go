@@ -23,7 +23,7 @@ func NewStudentInmem() *inmem {
 func (r *inmem) Create(e *entity.Student) (entity.ID, error) {
 	// Gets a new ID
 	var max = 0
-	for k, _ := range r.m {
+	for k := range r.m {
 		if k > max {
 			max = k
 		}
