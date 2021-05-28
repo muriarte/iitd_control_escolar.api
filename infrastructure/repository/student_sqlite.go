@@ -24,7 +24,7 @@ func NewStudentSQLite(db *sql.DB) *StudentSQLite {
 
 //Create a student
 func (r *StudentSQLite) Create(e *entity.Student) (entity.ID, error) {
-	var sqlStr = fmt.Sprintf("insert into students (%s) values(?,?,?,?,?)", StudentFieldList)
+	var sqlStr = fmt.Sprintf("insert into students (%s) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", StudentFieldList)
 	stmt, err := r.db.Prepare(sqlStr)
 	if err != nil {
 		return e.ID, err
@@ -58,8 +58,8 @@ func (r *StudentSQLite) Create(e *entity.Student) (entity.ID, error) {
 		return e.ID, err
 	}
 
-	lastID, err:=rsp.LastInsertId()
-	if err!=nil {
+	lastID, err := rsp.LastInsertId()
+	if err != nil {
 		return e.ID, err
 	}
 	return entity.ID(lastID), nil
@@ -89,7 +89,9 @@ func (r *StudentSQLite) Get(id entity.ID) (*entity.Student, error) {
 //Update a student
 func (r *StudentSQLite) Update(e *entity.Student) error {
 	e.UpdatedAt = time.Now()
-	_, err := r.db.Exec("update students set email = ?, firstname = ?, lastname = ?, age = ?, updated_at = ? where id = ?",
+	_, err := r.db.Exec(`update students set nombres=?, apellidos=?, nacimiento=?, sexo=?, calle=?, 
+                    numeroext=?, numeroint=?, colonia=?, municipio=?, estado=?, pais=?, cp=?, telcelular=?, 
+                    telcasa=?, email=?, fechainicio=?, observaciones=?, activo=?, created_at=? where id = ?`,
 		e.Nombres,
 		e.Apellidos,
 		e.Nacimiento,

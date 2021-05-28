@@ -11,7 +11,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
-	"github.com/urfave/negroni"
 	"iitd_control_escolar.api/api/presenter"
 	"iitd_control_escolar.api/entity"
 	"iitd_control_escolar.api/usecase/student/mock"
@@ -22,8 +21,7 @@ func Test_listStudents(t *testing.T) {
 	defer controller.Finish()
 	m := mock.NewMockUseCase(controller)
 	r := mux.NewRouter()
-	n := negroni.New()
-	MakeStudentHandlers(r, *n, m)
+	MakeStudentHandlers(r, m)
 	path, err := r.GetRoute("listStudents").GetPathTemplate()
 	assert.Nil(t, err)
 	assert.Equal(t, "/v1/students", path)
@@ -76,8 +74,7 @@ func Test_createStudent(t *testing.T) {
 	defer controller.Finish()
 	m := mock.NewMockUseCase(controller)
 	r := mux.NewRouter()
-	n := negroni.New()
-	MakeStudentHandlers(r, *n, m)
+	MakeStudentHandlers(r, m)
 	path, err := r.GetRoute("createStudent").GetPathTemplate()
 	assert.Nil(t, err)
 	assert.Equal(t, "/v1/students", path)
@@ -110,8 +107,7 @@ func Test_getStudent(t *testing.T) {
 	defer controller.Finish()
 	m := mock.NewMockUseCase(controller)
 	r := mux.NewRouter()
-	n := negroni.New()
-	MakeStudentHandlers(r, *n, m)
+	MakeStudentHandlers(r, m)
 	path, err := r.GetRoute("getStudent").GetPathTemplate()
 	assert.Nil(t, err)
 	assert.Equal(t, "/v1/students/{id}", path)
@@ -139,8 +135,7 @@ func Test_deleteStudent(t *testing.T) {
 	defer controller.Finish()
 	m := mock.NewMockUseCase(controller)
 	r := mux.NewRouter()
-	n := negroni.New()
-	MakeStudentHandlers(r, *n, m)
+	MakeStudentHandlers(r, m)
 	path, err := r.GetRoute("deleteStudent").GetPathTemplate()
 	assert.Nil(t, err)
 	assert.Equal(t, "/v1/students/{id}", path)

@@ -3,27 +3,21 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"iitd_control_escolar.api/pkg/metric"
+	"github.com/rs/cors"
+	"iitd_control_escolar.api/infrastructure/repository"
+	"iitd_control_escolar.api/usecase/student"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
 
-	"iitd_control_escolar.api/infrastructure/repository"
-	"iitd_control_escolar.api/usecase/student"
-
 	//"github.com/prometheus/client_golang/prometheus/promhttp"
-
-	// lightweight middleware management
-	"github.com/urfave/negroni"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"iitd_control_escolar.api/api/handler"
-	"iitd_control_escolar.api/api/middleware"
 	"iitd_control_escolar.api/config"
 	//"github.com/eminetto/clean-architecture-go-v2/pkg/metric"
 	_ "github.com/mattn/go-sqlite3"
@@ -44,39 +38,26 @@ func main() {
 	studentRepo := repository.NewStudentSQLite(db) //repository.NewStudentMySQL(db)
 	studentService := student.NewService(studentRepo)
 
-	//userRepo := repository.NewUserMySQL(db)
-	//userService := user.NewService(userRepo)
-	//
-	//loanUseCase := loan.NewService(userService, studentService)
-
-	metricService, err := metric.NewPrometheusService()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
 	r := mux.NewRouter()
+	r.Use(mux.CORSMethodMiddleware(r))
+
 	//handlers
-	n := negroni.New(
-		negroni.NewRecovery(),
-		negroni.HandlerFunc(middleware.Cors),
-		middleware.Metrics(metricService),
-		negroni.NewLogger(),
-	)
 
 	// Build http handlers
 
 	//student
-	handler.MakeStudentHandlers(r, *n, studentService)
-
-	////user
-	//handler.MakeUserHandlers(r, *n, userService)
-	//
-	////loan
-	//handler.MakeLoanHandlers(r, *n, studentService, userService, loanUseCase)
+	handler.MakeStudentHandlers(r, studentService)
 
 	http.Handle("/", r)
-	http.Handle("/metrics", promhttp.Handler())
 	r.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
+	})
+
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{"GET","POST","DELETE","PUT","OPTIONS"},
+		AllowedHeaders: []string{"*"},
+		AllowCredentials: true,
 	})
 
 	logger := log.New(os.Stderr, "logger: ", log.Lshortfile)
@@ -84,11 +65,12 @@ func main() {
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		Addr:         ":" + strconv.Itoa(config.API_PORT),
-		Handler:      context.ClearHandler(http.DefaultServeMux),
+		//Handler:      context.ClearHandler(http.DefaultServeMux),
+		Handler:      context.ClearHandler(c.Handler(r)),
 		ErrorLog:     logger,
 	}
 	fmt.Printf("iitd Api Server listening on %s", ":"+strconv.Itoa(config.API_PORT))
-	err = srv.ListenAndServe()
+	err := srv.ListenAndServe()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
