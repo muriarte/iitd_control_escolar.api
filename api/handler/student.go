@@ -228,6 +228,16 @@ func deleteStudent(service student.UseCase) http.Handler {
 			_, _ = w.Write([]byte(errorMessage))
 			return
 		}
+
+		ret := struct {
+			Status bool `json:"status"`
+		}{
+			Status: true,
+		}
+		if err := json.NewEncoder(w).Encode(ret); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write([]byte(errorMessage))
+		}
 	})
 }
 
