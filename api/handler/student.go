@@ -105,6 +105,7 @@ func createStudent(service student.UseCase) http.Handler {
 				input.NumeroExt, input.NumeroInt, input.Colonia, input.Municipio, input.Estado, input.Pais, input.CP,
 				input.TelCelular, input.TelCasa, input.Email, input.FechaInicio, input.Observaciones, input.Activo)
 		} else {
+			id = input.ID
 			s, err = entity.NewStudent(input.Nombres, input.Apellidos, input.Nacimiento, input.Sexo, input.Calle,
 				input.NumeroExt, input.NumeroInt, input.Colonia, input.Municipio, input.Estado, input.Pais, input.CP,
 				input.TelCelular, input.TelCasa, input.Email, input.FechaInicio, input.Observaciones, input.Activo)
