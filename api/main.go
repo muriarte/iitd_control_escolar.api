@@ -3,14 +3,15 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/rs/cors"
-	"iitd_control_escolar.api/infrastructure/repository"
-	"iitd_control_escolar.api/usecase/student"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/rs/cors"
+	"iitd_control_escolar.api/infrastructure/repository"
+	"iitd_control_escolar.api/usecase/student"
 
 	//"github.com/prometheus/client_golang/prometheus/promhttp"
 
@@ -19,6 +20,7 @@ import (
 	"github.com/gorilla/mux"
 	"iitd_control_escolar.api/api/handler"
 	"iitd_control_escolar.api/config"
+
 	//"github.com/eminetto/clean-architecture-go-v2/pkg/metric"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -54,9 +56,9 @@ func main() {
 	})
 
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"GET","POST","DELETE","PUT","OPTIONS"},
-		AllowedHeaders: []string{"*"},
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "DELETE", "PUT", "OPTIONS"},
+		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
 	})
 
@@ -66,11 +68,26 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 		Addr:         ":" + strconv.Itoa(config.API_PORT),
 		//Handler:      context.ClearHandler(http.DefaultServeMux),
-		Handler:      context.ClearHandler(c.Handler(r)),
-		ErrorLog:     logger,
+		Handler:  context.ClearHandler(c.Handler(r)),
+		ErrorLog: logger,
 	}
-	fmt.Printf("iitd Api Server listening on %s", ":"+strconv.Itoa(config.API_PORT))
-	err := srv.ListenAndServe()
+
+	// Desplegamos directorio actual
+	pwd, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("Error al obtener directorio actual %s", err.Error())
+	}
+	fmt.Printf("Directorio actual:%s\n", pwd)
+
+	// Realizamos test de acceso a la base de datos
+	sts, err := studentService.ListStudents()
+	if err != nil {
+		log.Fatalf("Error al hacer test de acceso a la base de datos %s", err.Error())
+	}
+	fmt.Printf("Estudiantes en base de datos: %d\n", len(sts))
+
+	fmt.Printf("iitd Api Server listening on %s\n", ":"+strconv.Itoa(config.API_PORT))
+	err = srv.ListenAndServe()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
