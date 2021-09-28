@@ -18,7 +18,7 @@ dependencies:
 build: dependencies build-api build-cmd
 
 build-api:
-	go build -tags $(LIBRARY_ENV) -o ./bin/iitd_apiserver.exe api/main.go
+	go build -tags $(LIBRARY_ENV) -o ./bin/iitd_apiserver.exe cmd/main.go
 
 build-cmd:
 	go build -tags $(LIBRARY_ENV) -o ./bin/iitd_cli.exe cmd/iitd_server/main.go

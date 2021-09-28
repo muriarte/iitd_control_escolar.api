@@ -3,8 +3,10 @@ package repository
 import (
 	"database/sql"
 	"fmt"
-	"iitd_control_escolar.api/entity"
+
 	"time"
+
+	"iitd_control_escolar.api/entity"
 )
 
 //const StudentFieldList =  `nombres, apellidos, nacimiento, sexo, calle, numeroext, numeroint, colonia,

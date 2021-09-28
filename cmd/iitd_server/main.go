@@ -43,11 +43,14 @@ func main() {
 	r := mux.NewRouter()
 	r.Use(mux.CORSMethodMiddleware(r))
 
-	//handlers
+	// handlers
 
 	// Build http handlers
 
-	//student
+	// Static content
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
+
+	// student
 	handler.MakeStudentHandlers(r, studentService)
 
 	http.Handle("/", r)
