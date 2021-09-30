@@ -52,7 +52,7 @@ export default {
 		css({ output: 'bundle.css' }),
 
 		postcss({
-			extract: "bundle-from-sass.css",
+			extract: 'bundle-from-sass.css',
 			minimize: true,
 			use: [
 				[

@@ -1,0 +1,143 @@
+{
+	// Place your snippets for svelte here. Each snippet is defined under a snippet name and has a prefix, body and 
+	// description. The prefix is what is used to trigger the snippet and the body will be expanded and inserted. Possible variables are:
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. Placeholders with the 
+	// same ids are connected.
+	// Example:
+	// "Print to console": {
+	// 	"prefix": "log",
+	// 	"body": [
+	// 		"console.log('$1');",
+	// 		"$2"
+	// 	],
+	// 	"description": "Log output to console"
+	// }
+	"SMUI Button": {
+		"prefix": "smui_btn",
+		"body": [
+			"<Button color=\"secondary\" on:click={() => clicked++} disabled ripple={false} touch variant=\"raised|unelevated|outlined\">",
+			" <Label>{$1:ButtonText}</Label>",
+			"</Button>"
+		],
+		"description": "Svelte Material UI Button"
+	},
+	"SMUI Button import": {
+		"prefix": "smui_btn_i",
+		"body": [
+			"//npm i -D @smui/button;",
+			"import Button, { Label } from '@smui/button';",
+		],
+		"description": "Svelte Material UI Button"
+	},
+	"SMUI TextField import": {
+		"prefix": "smui_txt_i",
+		"body": [
+			"//npm i -D @smui/textfield;",
+			"import Textfield from '@smui/textfield';",
+			"import Icon from '@smui/textfield/icon';",
+			"import HelperText from '@smui/textfield/helper-text/index';",
+		],
+		"description": "Svelte Material UI Button"
+	},
+	"SMUI TextField": {
+		"prefix": "smui_txt",
+		"body": [
+			"<Textfield textarea required type=\"$1text|email|date|hidden|month|number|password|search|tel|time|url|week|\" prefix=\"$\" suffix=\"㎏\" input$$pattern={'\\d+(\\.\\d{2})?'} input$maxlength=\"18\" variant=\"$2filled|outlined\" bind:dirty bind:invalid updateInvalid bind:value label=\"{$3:label}\" style=\"min-width: 250px;\" input$$autocomplete=\"$4email\" on:focus={() => (focused = true)} on:blur={() => (focused = false)} withLeadingIcon={{$5:showLeadingIcon}} withTrailingIcon={{$7:showTrailingIcon}} input$$rows=\"4\" input$$cols=\"24\" input$$resizable={false} style=\"width: 100%;\" helperLine$$style=\"width: 100%;\">",
+			" <svelte:fragment slot=\"leadingIcon\">",
+			"  {#if {$5:showLeadingIcon}}",
+			"   <Icon class=\"material-icons\" role=\"button\" on:click={$6clickHandler}>send</Icon>",
+			"  {/if}",
+			" </svelte:fragment>",
+			" <svelte:fragment slot=\"trailingIcon\">",
+			"  {#if !{$7:showTrailingIcon}}",
+			"   <Icon class=\"material-icons\" role=\"button\" on:click={$8clickHandler}>send</Icon>",
+			"  {/if}",
+			" </svelte:fragment>",
+			" <HelperText persistent validationMsg slot=\"helper\">",
+			"   {$9:InvalidMessage}",
+			" </HelperText>",
+			" <CharacterCounter slot=\"helper\">0 / 18</CharacterCounter>",
+			" <CharacterCounter slot=\"internalCounter\">0 / 18</CharacterCounter>",
+			" <svelte:fragment slot=\"helper\">",
+			"  <HelperText>Helper Text</HelperText>",
+			"  <CharacterCounter>0 / 18</CharacterCounter>",
+			" </svelte:fragment>",
+			" <Icon class=\"material-icons\" slot=\"leadingIcon\" on:click={$10clickHandler}>event</Icon>",
+			" <Icon class=\"material-icons\" slot=\"trailingIcon\" on:click={$11clickHandler}>delete</Icon>",
+			"</Textfield>"
+		],
+		"description": "Svelte Material UI Text field"
+	},
+	"SMUI TextField Basic": {
+		"prefix": "smui_txtbasic",
+		"body": [
+			"<Textfield required type=\"$1text|email|date|hidden|month|number|password|search|tel|time|url|week|\" input$$maxlength=\"18\" bind:dirty bind:invalid updateInvalid bind:value label=\"{$2:label}\" helperLine$$style=\"width: 100%;\">",
+			" <HelperText persistent validationMsg slot=\"helper\">",
+			"   {$3InvalidMessage}",
+			" </HelperText>",
+			" <svelte:fragment slot=\"helper\">",
+			"  <HelperText>Helper Text</HelperText>",
+			"  <CharacterCounter>0 / 18</CharacterCounter>",
+			" </svelte:fragment>",
+			"</Textfield>"
+		],
+		"description": "Svelte Material UI Text field (version basica)"
+	},
+	"SMUI Dialog Mandatory": {
+		"prefix": "smui_dlg",
+		"body": [
+			"<!-- import Dialog, { Title, Content, Actions, InitialFocus } from '@smui/dialog';",
+			"     import Button, { Label } from '@smui/button'; -->",
+			"<Dialog",
+			"bind:open={dialogIsOpen}",
+			"scrimClickAction=\"\"",
+			"escapeKeyAction=\"\"",
+			"aria-labelledby=\"$1dialogId\"",
+			"aria-describedby=\"$2dialogContentId\"",
+			">",
+			" <Title id=\"$1dialogId\">Titulo</Title>",
+			" <Content id=\"$2dialogContentId\">",
+			"  Contenido",
+			" </Content>",
+			" <Actions>",
+			"  <Button on:click={() => (response = 'Wrong answer. Thrown in the lake.')}>",
+			"   <Label>Answer 1</Label>",
+			"  </Button>",
+			"  <Button default use={[InitialFocus]} on:click={() => (response = 'You are correct. You may pass.')}>",
+			"   <Label>Answer 2</Label>",
+			"  </Button>",
+			" </Actions>",
+			"</Dialog>"
+		],
+		"description": "Svelte Material UI Dialog"
+	},
+	"SMUI Select": {
+		"prefix": "smui_sel",
+		"body": [
+			"<Select",
+			" bind:value={$1}",
+			" name=\"$2\"",
+			" label=\"$3\"",
+			" style=\"width:17em\"",
+			">",
+			"<Option value=\"\" />",
+			" {#each unidades as unidad (unidad.clave)}",
+			"  <Option value={unidad.clave}>{unidad.descripcion}</Option>",
+			" {/each}",
+			"</Select>",
+		],
+		"description": "Svelte Material UI Select list"
+	},
+	"SMUI Checkbox": {
+		"prefix": "smui_chk",
+		"body": [
+			"<!--  import FormField from \"@smui/form-field/styled\"; -->",
+			"<!--  import Checkbox from \"@smui/checkbox/styled\"; -->",
+			"<FormField>",
+			" <Checkbox bind:checked={modalidadMaritima} touch />",
+			" <span slot=\"label\">Maritimo</span>",
+			"</FormField>",
+		],
+		"description": "Svelte Material UI Checkbox"
+	},
+}

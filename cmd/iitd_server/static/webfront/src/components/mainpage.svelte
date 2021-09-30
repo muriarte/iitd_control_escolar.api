@@ -1,25 +1,12 @@
 <script lang="ts">
-  import Drawer, {
-    AppContent,
-    Content,
-    Header,
-    Title,
-    Subtitle,
-    Scrim,
-  } from "@smui/drawer/styled";
+  import Drawer, { AppContent, Content, Header, Title, Subtitle, Scrim } from "@smui/drawer/styled";
   import Button, { Label } from "@smui/button/styled";
   import IconButton from "@smui/icon-button/styled";
-  import List, {
-    Item,
-    Text,
-    Graphic,
-    Separator,
-    Subheader,
-  } from "@smui/list/styled";
+  import List, { Item, Text, Graphic, Separator, Subheader } from "@smui/list/styled";
   import H6 from "@smui/common/H6.svelte";
 
-  // import Splash from "./splash.svelte";
-  // import BuscaFactura from "./busca-factura.svelte";
+  import Splash from "./splash.svelte";
+  import CatalogoEstudiantes from "./catalogoestudiantes.svelte";
 
   const modCatEstudiantes: string = "CatalogoEstudiantes";
   const modSplash: string = "Splash";
@@ -31,6 +18,9 @@
   let open = false;
 
   let active = initialModule;
+  if (!active) {
+    active = modSplash;
+  }
 
   function setActive(value: string) {
     active = value;
@@ -60,11 +50,7 @@
 
       <Separator />
       <Subheader component={H6}>Labels</Subheader>
-      <Item
-        href="javascript:void(0)"
-        on:click={() => setActive("Logout")}
-        activated={active === "Logout"}
-      >
+      <Item href="javascript:void(0)" on:click={() => setActive("Logout")} activated={active === "Logout"}>
         <Graphic class="material-icons" aria-hidden="true">exit</Graphic>
         <Text>Logout</Text>
       </Item>
@@ -78,18 +64,14 @@
 <Scrim />
 <AppContent class="app-content">
   <main class="main-content">
-    <IconButton
-      class="material-icons"
-      on:click={() => (open = !open)}
-      ripple={false}>menu</IconButton
-    >
-    <!-- <br /> -->
-    <!-- <pre class="status">Active: {active}</pre> -->
+    <IconButton class="material-icons" on:click={() => (open = !open)} ripple={false}>menu</IconButton>
+    <h3>{title} - {subtitle}</h3><br>
+    <!-- active:{active} -->
     {#if active == modSplash}
-      <!-- <Splash /> -->
+      <Splash />
     {/if}
     {#if active == modCatEstudiantes}
-      <!-- <BuscaFactura /> -->
+      <CatalogoEstudiantes />
     {/if}
   </main>
 </AppContent>
@@ -121,5 +103,8 @@
     padding: 5px;
     height: 100%;
     box-sizing: border-box;
+  }
+  h3 {
+    display:inline;
   }
 </style>
