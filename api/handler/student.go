@@ -2,14 +2,15 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
+	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/urfave/negroni"
 	"iitd_control_escolar.api/api/presenter"
 	"iitd_control_escolar.api/entity"
+	jd "iitd_control_escolar.api/pkg/jsondate"
 	"iitd_control_escolar.api/usecase/student"
-	"log"
-	"net/http"
-	"time"
 )
 
 func listStudents(service student.UseCase) http.Handler {
@@ -42,7 +43,7 @@ func listStudents(service student.UseCase) http.Handler {
 				ID:            d.ID,
 				Nombres:       d.Nombres,
 				Apellidos:     d.Apellidos,
-				Nacimiento:    d.Nacimiento,
+				Nacimiento:    jd.JsonDate(d.Nacimiento),
 				Sexo:          d.Sexo,
 				Calle:         d.Calle,
 				NumeroExt:     d.NumeroExt,
@@ -55,7 +56,7 @@ func listStudents(service student.UseCase) http.Handler {
 				TelCelular:    d.TelCelular,
 				TelCasa:       d.TelCasa,
 				Email:         d.Email,
-				FechaInicio:   d.FechaInicio,
+				FechaInicio:   jd.JsonDate(d.FechaInicio),
 				Observaciones: d.Observaciones,
 				Activo:        d.Activo,
 			})
@@ -71,25 +72,25 @@ func createStudent(service student.UseCase) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		errorMessage := "Error adding student"
 		var input struct {
-			ID            entity.ID `json:"id"`
-			Nombres       string    `json:"nombres"`
-			Apellidos     string    `json:"apellidos"`
-			Nacimiento    time.Time `json:"nacimiento"`
-			Sexo          string    `json:"sexo"`
-			Calle         string    `json:"calle"`
-			NumeroExt     string    `json:"numeroExt"`
-			NumeroInt     string    `json:"numeroInt"`
-			Colonia       string    `json:"colonia"`
-			Municipio     string    `json:"municipio"`
-			Estado        string    `json:"estado"`
-			Pais          string    `json:"pais"`
-			CP            string    `json:"cp"`
-			TelCelular    string    `json:"telCelular"`
-			TelCasa       string    `json:"telCasa"`
-			Email         string    `json:"email"`
-			FechaInicio   time.Time `json:"fechaInicio"`
-			Observaciones string    `json:"observaciones"`
-			Activo        string    `json:"activo"`
+			ID            entity.ID   `json:"id"`
+			Nombres       string      `json:"nombres"`
+			Apellidos     string      `json:"apellidos"`
+			Nacimiento    jd.JsonDate `json:"nacimiento"`
+			Sexo          string      `json:"sexo"`
+			Calle         string      `json:"calle"`
+			NumeroExt     string      `json:"numeroExt"`
+			NumeroInt     string      `json:"numeroInt"`
+			Colonia       string      `json:"colonia"`
+			Municipio     string      `json:"municipio"`
+			Estado        string      `json:"estado"`
+			Pais          string      `json:"pais"`
+			CP            string      `json:"cp"`
+			TelCelular    string      `json:"telCelular"`
+			TelCasa       string      `json:"telCasa"`
+			Email         string      `json:"email"`
+			FechaInicio   jd.JsonDate `json:"fechaInicio"`
+			Observaciones string      `json:"observaciones"`
+			Activo        string      `json:"activo"`
 		}
 		err := json.NewDecoder(r.Body).Decode(&input)
 		if err != nil {
@@ -101,14 +102,14 @@ func createStudent(service student.UseCase) http.Handler {
 		var id entity.ID
 		var s *entity.Student
 		if input.ID == 0 {
-			id, err = service.CreateStudent(input.Nombres, input.Apellidos, input.Nacimiento, input.Sexo, input.Calle,
+			id, err = service.CreateStudent(input.Nombres, input.Apellidos, input.Nacimiento.ToTime(), input.Sexo, input.Calle,
 				input.NumeroExt, input.NumeroInt, input.Colonia, input.Municipio, input.Estado, input.Pais, input.CP,
-				input.TelCelular, input.TelCasa, input.Email, input.FechaInicio, input.Observaciones, input.Activo)
+				input.TelCelular, input.TelCasa, input.Email, input.FechaInicio.ToTime(), input.Observaciones, input.Activo)
 		} else {
 			id = input.ID
-			s, err = entity.NewStudent(input.Nombres, input.Apellidos, input.Nacimiento, input.Sexo, input.Calle,
+			s, err = entity.NewStudent(input.Nombres, input.Apellidos, input.Nacimiento.ToTime(), input.Sexo, input.Calle,
 				input.NumeroExt, input.NumeroInt, input.Colonia, input.Municipio, input.Estado, input.Pais, input.CP,
-				input.TelCelular, input.TelCasa, input.Email, input.FechaInicio, input.Observaciones, input.Activo)
+				input.TelCelular, input.TelCasa, input.Email, input.FechaInicio.ToTime(), input.Observaciones, input.Activo)
 			if err != nil {
 				log.Println(err.Error())
 				w.WriteHeader(http.StatusInternalServerError)
@@ -188,7 +189,7 @@ func getStudent(service student.UseCase) http.Handler {
 			ID:            data.ID,
 			Nombres:       data.Nombres,
 			Apellidos:     data.Apellidos,
-			Nacimiento:    data.Nacimiento,
+			Nacimiento:    jd.JsonDate(data.Nacimiento),
 			Sexo:          data.Sexo,
 			Calle:         data.Calle,
 			NumeroExt:     data.NumeroExt,
@@ -201,7 +202,7 @@ func getStudent(service student.UseCase) http.Handler {
 			TelCelular:    data.TelCelular,
 			TelCasa:       data.TelCasa,
 			Email:         data.Email,
-			FechaInicio:   data.FechaInicio,
+			FechaInicio:   jd.JsonDate(data.FechaInicio),
 			Observaciones: data.Observaciones,
 			Activo:        data.Activo,
 		}

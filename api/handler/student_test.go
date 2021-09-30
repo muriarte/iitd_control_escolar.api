@@ -88,12 +88,12 @@ func Test_createStudent(t *testing.T) {
 
 	ts := httptest.NewServer(h)
 	defer ts.Close()
-	payload := fmt.Sprintf(`{
+	payload := `{
 "activo": "S",
 "email": "pepe@test.com",
 "nombres":"Pepe",
 "apellidos":"Potamo"
-}`)
+}`
 	resp, _ := http.Post(ts.URL+"/v1/student", "application/json", strings.NewReader(payload))
 	assert.Equal(t, http.StatusCreated, resp.StatusCode)
 
