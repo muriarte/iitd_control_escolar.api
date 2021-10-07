@@ -2,25 +2,26 @@ package repository
 
 import (
 	"fmt"
-	"iitd_control_escolar.api/entity"
 	"strings"
+
+	"iitd_control_escolar.api/entity"
 )
 
 //inmem in memory repo
 type inmem struct {
-	m map[entity.ID]*entity.Student
+	m map[int]*entity.Student
 }
 
 //NewStudentInmem create new repository
 func NewStudentInmem() *inmem {
-	var m = map[entity.ID]*entity.Student{}
+	var m = map[int]*entity.Student{}
 	return &inmem{
 		m: m,
 	}
 }
 
 //Create an student
-func (r *inmem) Create(e *entity.Student) (entity.ID, error) {
+func (r *inmem) Create(e *entity.Student) (int, error) {
 	// Gets a new ID
 	var max = 0
 	for k := range r.m {
@@ -30,13 +31,13 @@ func (r *inmem) Create(e *entity.Student) (entity.ID, error) {
 	}
 	max += 1
 
-	e.ID=max
+	e.ID = max
 	r.m[e.ID] = e
 	return e.ID, nil
 }
 
 //Get an student
-func (r *inmem) Get(id entity.ID) (*entity.Student, error) {
+func (r *inmem) Get(id int) (*entity.Student, error) {
 	if r.m[id] == nil {
 		return nil, entity.ErrNotFound
 	}
@@ -78,7 +79,7 @@ func (r *inmem) List() ([]*entity.Student, error) {
 }
 
 //Delete an student
-func (r *inmem) Delete(id entity.ID) error {
+func (r *inmem) Delete(id int) error {
 	if r.m[id] == nil {
 		return fmt.Errorf("not found")
 	}

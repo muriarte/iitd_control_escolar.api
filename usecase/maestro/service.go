@@ -1,4 +1,4 @@
-package student
+package maestro
 
 import (
 	"strings"
@@ -19,11 +19,11 @@ func NewService(r Repository) *Service {
 	}
 }
 
-//CreateStudent Create an student
-func (s *Service) CreateStudent(nombres, apellidos string, nacimiento time.Time, sexo, calle, numeroExt, numeroInt, colonia,
+//CreateMaestro Create an maestro
+func (s *Service) CreateMaestro(nombres, apellidos string, nacimiento time.Time, sexo, calle, numeroExt, numeroInt, colonia,
 	municipio, estado, pais, cp, telCelular, telCasa, email string, fechaInicio time.Time,
 	observaciones, activo string) (int, error) {
-	e, err := entity.NewStudent(nombres, apellidos, nacimiento, sexo, calle, numeroExt, numeroInt, colonia,
+	e, err := entity.NewMaestro(nombres, apellidos, nacimiento, sexo, calle, numeroExt, numeroInt, colonia,
 		municipio, estado, pais, cp, telCelular, telCasa, email, fechaInicio, observaciones, activo)
 	if err != nil {
 		return e.ID, err
@@ -31,24 +31,24 @@ func (s *Service) CreateStudent(nombres, apellidos string, nacimiento time.Time,
 	return s.repo.Create(e)
 }
 
-//GetStudent Get an student
-func (s *Service) GetStudent(id int) (*entity.Student, error) {
+//GetMaestro Get an maestro
+func (s *Service) GetMaestro(id int) (*entity.Maestro, error) {
 	return s.repo.Get(id)
 }
 
-//SearchStudents Search students
-func (s *Service) SearchStudents(query string) ([]*entity.Student, error) {
+//SearchMaestros Search maestros
+func (s *Service) SearchMaestros(query string) ([]*entity.Maestro, error) {
 	return s.repo.Search(strings.ToLower(query))
 }
 
-//ListStudents List students
-func (s *Service) ListStudents() ([]*entity.Student, error) {
+//ListMaestros List maestros
+func (s *Service) ListMaestros() ([]*entity.Maestro, error) {
 	return s.repo.List()
 }
 
-//DeleteStudent Delete an student
-func (s *Service) DeleteStudent(id int) error {
-	u, err := s.GetStudent(id)
+//DeleteMaestro Delete an maestro
+func (s *Service) DeleteMaestro(id int) error {
+	u, err := s.GetMaestro(id)
 	if u == nil {
 		return entity.ErrNotFound
 	}
@@ -61,12 +61,12 @@ func (s *Service) DeleteStudent(id int) error {
 	return s.repo.Delete(id)
 }
 
-//UpdateStudent Update an student
-func (s *Service) UpdateStudent(e *entity.Student) error {
+//UpdateMaestro Update an maestro
+func (s *Service) UpdateMaestro(e *entity.Maestro) error {
 	err := e.Validate()
 	if err != nil {
 		return entity.ErrInvalidEntity
 	}
-	e.UpdatedAt = time.Now()
+	//e.UpdatedAt = time.Now()
 	return s.repo.Update(e)
 }

@@ -1,3 +1,4 @@
 bin/
 .idea/
 data.sqlite
+cmd/iitd_server/__debug_bin.exe

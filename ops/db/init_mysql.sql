@@ -1,7 +1,7 @@
 create
 database if not exists iitd;
-use
-iitd;
+use iitd;
+
 create table if not exists students
 (
     id int,
@@ -25,5 +25,44 @@ create table if not exists students
     activo char(1),
     created_at datetime,
     updated_at datetime,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+
+create table if not exists maestros
+(
+    id int,
+    nombre varchar(100),
+    observaciones mediumtext,
+    activo char(1),
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+
+
+create table if not exists materias
+(
+    id int,
+    nombre varchar(100),
+    observaciones mediumtext,
+    activo char(1),
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+
+create table if not exists studentmaterias
+(
+    id int,
+    studentid int,
+    materiaid int,
+    inicio datetime,
+    fin datetime,
+    observaciones mediumtext,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+
+create table if not exists observaciones
+(
+    id int,
+    studentid int,
+    fecha datetime,
+    observacion mediumtext,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;

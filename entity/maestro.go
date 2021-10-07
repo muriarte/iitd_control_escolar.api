@@ -5,7 +5,7 @@ import (
 )
 
 //Student data
-type Student struct {
+type Maestro struct {
 	ID            int
 	Nombres       string
 	Apellidos     string
@@ -25,15 +25,13 @@ type Student struct {
 	FechaInicio   time.Time
 	Observaciones string
 	Activo        string
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
 }
 
-//NewStudent create a new student
-func NewStudent(nombres, apellidos string, nacimiento time.Time, sexo, calle, numeroExt, numeroInt, colonia,
+//NewMaestro create a new student
+func NewMaestro(nombres, apellidos string, nacimiento time.Time, sexo, calle, numeroExt, numeroInt, colonia,
 	municipio, estado, pais, cp, telCelular, telCasa, email string, fechaInicio time.Time,
-	observaciones, activo string) (*Student, error) {
-	u := &Student{
+	observaciones, activo string) (*Maestro, error) {
+	u := &Maestro{
 		ID:            0,
 		Nombres:       nombres,
 		Apellidos:     apellidos,
@@ -53,7 +51,6 @@ func NewStudent(nombres, apellidos string, nacimiento time.Time, sexo, calle, nu
 		FechaInicio:   fechaInicio,
 		Observaciones: observaciones,
 		Activo:        activo,
-		CreatedAt:     time.Now(),
 	}
 	err := u.Validate()
 	if err != nil {
@@ -63,8 +60,8 @@ func NewStudent(nombres, apellidos string, nacimiento time.Time, sexo, calle, nu
 }
 
 //Validate validate data
-func (u *Student) Validate() error {
-	if u.Nombres == "" || u.Apellidos == "" {
+func (u *Maestro) Validate() error {
+	if u.Nombres == "" {
 		return ErrInvalidEntity
 	}
 

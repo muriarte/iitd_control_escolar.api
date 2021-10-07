@@ -3,8 +3,9 @@ package repository
 import (
 	"database/sql"
 	"fmt"
-	"iitd_control_escolar.api/entity"
 	"time"
+
+	"iitd_control_escolar.api/entity"
 )
 
 const StudentFieldList = `nombres, apellidos, nacimiento, sexo, calle, numeroext, numeroint, colonia, 
@@ -23,7 +24,7 @@ func NewStudentSQLite(db *sql.DB) *StudentSQLite {
 }
 
 //Create a student
-func (r *StudentSQLite) Create(e *entity.Student) (entity.ID, error) {
+func (r *StudentSQLite) Create(e *entity.Student) (int, error) {
 	var sqlStr = fmt.Sprintf("insert into students (%s) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", StudentFieldList)
 	stmt, err := r.db.Prepare(sqlStr)
 	if err != nil {
@@ -62,11 +63,11 @@ func (r *StudentSQLite) Create(e *entity.Student) (entity.ID, error) {
 	if err != nil {
 		return e.ID, err
 	}
-	return entity.ID(lastID), nil
+	return int(lastID), nil
 }
 
 //Get a student
-func (r *StudentSQLite) Get(id entity.ID) (*entity.Student, error) {
+func (r *StudentSQLite) Get(id int) (*entity.Student, error) {
 	var sqlStr = fmt.Sprintf("select id, %s from students where id = ?", StudentFieldList)
 	stmt, err := r.db.Prepare(sqlStr)
 	if err != nil {
@@ -77,13 +78,19 @@ func (r *StudentSQLite) Get(id entity.ID) (*entity.Student, error) {
 	if err != nil {
 		return nil, err
 	}
-	for rows.Next() {
+	defer func() {
+		_ = rows.Close()
+		_ = stmt.Close()
+	}()
+
+	if rows.Next() {
 		err = studentFullRowScan(rows, &b)
 		if err != nil {
 			return nil, err
 		}
+		return &b, nil
 	}
-	return &b, nil
+	return nil, nil
 }
 
 //Update a student
@@ -130,6 +137,11 @@ func (r *StudentSQLite) Search(query string) ([]*entity.Student, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		_ = rows.Close()
+		_ = stmt.Close()
+	}()
+
 	for rows.Next() {
 		var b entity.Student
 		err = studentFullRowScan(rows, &b)
@@ -154,6 +166,11 @@ func (r *StudentSQLite) List() ([]*entity.Student, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		_ = rows.Close()
+		_ = stmt.Close()
+	}()
+
 	for rows.Next() {
 		var b entity.Student
 		err = studentFullRowScan(rows, &b)
@@ -166,7 +183,7 @@ func (r *StudentSQLite) List() ([]*entity.Student, error) {
 }
 
 //Delete a student
-func (r *StudentSQLite) Delete(id entity.ID) error {
+func (r *StudentSQLite) Delete(id int) error {
 	_, err := r.db.Exec("delete from students where id = ?", id)
 	if err != nil {
 		return err

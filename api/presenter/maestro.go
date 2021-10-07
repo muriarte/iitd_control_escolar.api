@@ -5,7 +5,7 @@ import (
 )
 
 //Student data
-type Student struct {
+type Maestro struct {
 	ID            int         `json:"id"`
 	Nombres       string      `json:"nombres"`
 	Apellidos     string      `json:"apellidos"`

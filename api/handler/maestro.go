@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -10,32 +11,28 @@ import (
 	"iitd_control_escolar.api/api/presenter"
 	"iitd_control_escolar.api/entity"
 	jd "iitd_control_escolar.api/pkg/jsondate"
-	"iitd_control_escolar.api/usecase/student"
+	"iitd_control_escolar.api/usecase/maestro"
 )
 
-func listStudents(service student.UseCase) http.Handler {
+func listMaestros(service maestro.UseCase) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var data []*entity.Student
+		var data []*entity.Maestro
 		var err error
 		name := r.URL.Query().Get("name")
 		switch {
 		case name == "":
-			data, err = service.ListStudents()
+			data, err = service.ListMaestros()
 		default:
-			data, err = service.SearchStudents(name)
+			data, err = service.SearchMaestros(name)
 		}
 		if err != nil { //&& err != entity.ErrNotFound {
 			sendErrorResponse(w, http.StatusInternalServerError, err_db_reading, err)
 			return
 		}
 
-		if data == nil {
-			sendOkResponse(w, http.StatusOK, []*presenter.Student{})
-			return
-		}
-		var toJ []*presenter.Student
+		var toJ []*presenter.Maestro = []*presenter.Maestro{}
 		for _, d := range data {
-			toJ = append(toJ, &presenter.Student{
+			toJ = append(toJ, &presenter.Maestro{
 				ID:            d.ID,
 				Nombres:       d.Nombres,
 				Apellidos:     d.Apellidos,
@@ -61,7 +58,7 @@ func listStudents(service student.UseCase) http.Handler {
 	})
 }
 
-func createStudent(service student.UseCase) http.Handler {
+func createMaestro(service maestro.UseCase) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var input struct {
 			ID            int         `json:"id"`
@@ -86,13 +83,14 @@ func createStudent(service student.UseCase) http.Handler {
 		}
 		err := json.NewDecoder(r.Body).Decode(&input)
 		if err != nil {
+			log.Println(err.Error())
 			sendErrorResponse(w, http.StatusInternalServerError, err_decoding_body, err)
 			return
 		}
 		var id int
-		var s *entity.Student
+		var s *entity.Maestro
 		if input.ID == 0 {
-			id, err = service.CreateStudent(input.Nombres, input.Apellidos, input.Nacimiento.ToTime(), input.Sexo, input.Calle,
+			id, err = service.CreateMaestro(input.Nombres, input.Apellidos, input.Nacimiento.ToTime(), input.Sexo, input.Calle,
 				input.NumeroExt, input.NumeroInt, input.Colonia, input.Municipio, input.Estado, input.Pais, input.CP,
 				input.TelCelular, input.TelCasa, input.Email, input.FechaInicio.ToTime(), input.Observaciones, input.Activo)
 			if err != nil {
@@ -101,7 +99,7 @@ func createStudent(service student.UseCase) http.Handler {
 			}
 		} else {
 			id = input.ID
-			s, err = entity.NewStudent(input.Nombres, input.Apellidos, input.Nacimiento.ToTime(), input.Sexo, input.Calle,
+			s, err = entity.NewMaestro(input.Nombres, input.Apellidos, input.Nacimiento.ToTime(), input.Sexo, input.Calle,
 				input.NumeroExt, input.NumeroInt, input.Colonia, input.Municipio, input.Estado, input.Pais, input.CP,
 				input.TelCelular, input.TelCasa, input.Email, input.FechaInicio.ToTime(), input.Observaciones, input.Activo)
 			if err != nil {
@@ -113,13 +111,13 @@ func createStudent(service student.UseCase) http.Handler {
 				return
 			}
 			s.ID = input.ID
-			err = service.UpdateStudent(s)
+			err = service.UpdateMaestro(s)
 			if err != nil {
 				sendErrorResponse(w, http.StatusInternalServerError, err_db_updating, err)
 				return
 			}
 		}
-		toJ := &presenter.Student{
+		toJ := &presenter.Maestro{
 			ID:            id,
 			Nombres:       input.Nombres,
 			Apellidos:     input.Apellidos,
@@ -145,7 +143,7 @@ func createStudent(service student.UseCase) http.Handler {
 	})
 }
 
-func getStudent(service student.UseCase) http.Handler {
+func getMaestro(service maestro.UseCase) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id, err := strconv.Atoi(vars["id"])
@@ -153,7 +151,7 @@ func getStudent(service student.UseCase) http.Handler {
 			sendErrorResponse(w, http.StatusBadRequest, err_slug_value, err)
 			return
 		}
-		data, err := service.GetStudent(id)
+		data, err := service.GetMaestro(id)
 		if err != nil { //&& err != entity.ErrNotFound {
 			sendErrorResponse(w, http.StatusInternalServerError, err_db_reading, err)
 			return
@@ -163,7 +161,7 @@ func getStudent(service student.UseCase) http.Handler {
 			sendOkResponse(w, http.StatusNotFound, nil)
 			return
 		}
-		toJ := &presenter.Student{
+		toJ := &presenter.Maestro{
 			ID:            data.ID,
 			Nombres:       data.Nombres,
 			Apellidos:     data.Apellidos,
@@ -188,7 +186,7 @@ func getStudent(service student.UseCase) http.Handler {
 	})
 }
 
-func deleteStudent(service student.UseCase) http.Handler {
+func deleteMaestro(service maestro.UseCase) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id, err := strconv.Atoi(vars["id"])
@@ -196,9 +194,9 @@ func deleteStudent(service student.UseCase) http.Handler {
 			sendErrorResponse(w, http.StatusBadRequest, err_slug_value, err)
 			return
 		}
-		err = service.DeleteStudent(id)
+		err = service.DeleteMaestro(id)
 		if err != nil {
-			sendErrorResponse(w, http.StatusInternalServerError, "error reading record from database", err)
+			sendErrorResponse(w, http.StatusInternalServerError, err_db_deleting, err)
 			return
 		}
 
@@ -211,31 +209,31 @@ func deleteStudent(service student.UseCase) http.Handler {
 	})
 }
 
-//MakeStudentHandlers make url handlers
-func MakeStudentHandlersNegroni(r *mux.Router, n negroni.Negroni, service student.UseCase) {
-	r.Handle("/v1/students", n.With(
-		negroni.Wrap(listStudents(service)),
-	)).Methods("GET", "OPTIONS").Name("listStudents")
+//MakeMaestroHandlers make url handlers
+func MakeMaestroHandlersNegroni(r *mux.Router, n negroni.Negroni, service maestro.UseCase) {
+	r.Handle("/v1/maestros", n.With(
+		negroni.Wrap(listMaestros(service)),
+	)).Methods("GET", "OPTIONS").Name("listMaestros")
 
-	r.Handle("/v1/students", n.With(
-		negroni.Wrap(createStudent(service)),
-	)).Methods("POST", "OPTIONS").Name("createStudent")
+	r.Handle("/v1/maestros", n.With(
+		negroni.Wrap(createMaestro(service)),
+	)).Methods("POST", "OPTIONS").Name("createMaestro")
 
-	r.Handle("/v1/students/{id}", n.With(
-		negroni.Wrap(getStudent(service)),
-	)).Methods("GET", "OPTIONS").Name("getStudent")
+	r.Handle("/v1/maestros/{id}", n.With(
+		negroni.Wrap(getMaestro(service)),
+	)).Methods("GET", "OPTIONS").Name("getMaestro")
 
-	r.Handle("/v1/students/{id}", n.With(
-		negroni.Wrap(deleteStudent(service)),
-	)).Methods("DELETE").Name("deleteStudent")
+	r.Handle("/v1/maestros/{id}", n.With(
+		negroni.Wrap(deleteMaestro(service)),
+	)).Methods("DELETE").Name("deleteMaestro")
 }
 
-func MakeStudentHandlers(r *mux.Router, service student.UseCase) {
-	r.Handle("/v1/students", listStudents(service)).Methods("GET", "OPTIONS").Name("listStudents")
+func MakeMaestroHandlers(r *mux.Router, service maestro.UseCase) {
+	r.Handle("/v1/maestros", listMaestros(service)).Methods("GET", "OPTIONS").Name("listMaestros")
 
-	r.Handle("/v1/students", createStudent(service)).Methods("POST", "OPTIONS").Name("createStudent")
+	r.Handle("/v1/maestros", createMaestro(service)).Methods("POST", "OPTIONS").Name("createMaestro")
 
-	r.Handle("/v1/students/{id}", getStudent(service)).Methods("GET", "OPTIONS").Name("getStudent")
+	r.Handle("/v1/maestros/{id}", getMaestro(service)).Methods("GET", "OPTIONS").Name("getMaestro")
 
-	r.Handle("/v1/students/{id}", deleteStudent(service)).Methods("DELETE").Name("deleteStudent")
+	r.Handle("/v1/maestros/{id}", deleteMaestro(service)).Methods("DELETE").Name("deleteMaestro")
 }
