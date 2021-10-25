@@ -6,8 +6,8 @@
   import Button from "@smui/button/styled";
   import Dialog, { Header, Title, Content, Actions } from "@smui/dialog/styled";
   import DataTable, { Head, Body, Row, Cell, SortValue } from "@smui/data-table/styled";
-  import EstudianteDetail from "./estudiantedetail.svelte";
-  import type { Estudiante } from "../models/estudiante";
+  import MaestroDetail from "./maestrodetail.svelte";
+  import type { Maestro } from "../models/maestro";
   import axios from "axios/dist/axios";
 
   let urlpathprefix: string = location.protocol + "//" + location.host + "/v1/";
@@ -18,15 +18,15 @@
 
   let dialogOpen: boolean = false;
 
-  let estudiante: Estudiante;
-  let estudiantes: Estudiante[] = [];
-  let sort: keyof Estudiante = "id";
+  let maestro: Maestro;
+  let maestros: Maestro[] = [];
+  let sort: keyof Maestro = "id";
   // let sortDirection: Lowercase<keyof typeof SortValue> = "ascending";
   let sortDirection: string | number | symbol = "ascending";
 
   let displayError: string = "";
 
-  cargaEstudiantes();
+  cargaMaestros();
 
   function closeDialogHandler(e: CustomEvent<{ action: string }>) {
     switch (e.detail.action) {
@@ -35,7 +35,7 @@
         break;
       case "accept":
         displayError = "Grabando!";
-        grabaEstudiante(estudiante);
+        grabaMaestro(maestro);
         displayError = "";
         break;
       default:
@@ -47,50 +47,50 @@
   }
 
   function handleSort() {
-    estudiantes.sort((a, b) => {
+    maestros.sort((a, b) => {
       const [aVal, bVal] = [a[sort], b[sort]][sortDirection === "ascending" ? "slice" : "reverse"]();
       if (typeof aVal === "string" && typeof bVal === "string") {
         return aVal.localeCompare(bVal);
       }
       return Number(aVal) - Number(bVal);
     });
-    estudiantes = estudiantes;
+    maestros = maestros;
   }
 
-  function cargaEstudiantes() {
+  function cargaMaestros() {
     displayError = "Por favor espere...";
     // Vaciamos el array
-    estudiantes.splice(0, estudiantes.length);
+    maestros.splice(0, maestros.length);
 
-    console.log("Cargando lista de estudiantes... ");
+    console.log("Cargando lista de maestros... ");
 
     httpClient
-      .get("students")
+      .get("maestros")
       .then((response) => {
         displayError = "";
         console.log(response.data);
 
         // Llena la tabla
         if (!response.data.data) {
-          console.log("Empty students list")
+          console.log("Empty maestros list")
           return
         }
-        let item: Estudiante;
+        let item: Maestro;
         for (item of response.data.data) {
           item = corrigeFechas(item);
-          estudiantes.push(item);
+          maestros.push(item);
         }
-        estudiantes = estudiantes;
+        maestros = maestros;
 
-        console.log("Lista de estudiantes:");
-        console.log(estudiantes);
+        console.log("Lista de maestros:");
+        console.log(maestros);
       })
       .catch((error) => {
         displayError = error;
       });
   }
 
-  function corrigeFechas(item: Estudiante): Estudiante {
+  function corrigeFechas(item: Maestro): Maestro {
     if (item.nacimiento && item.nacimiento.length > 10) {
       item.nacimiento = item.nacimiento.substr(0, 10);
     }
@@ -100,8 +100,8 @@
     return item;
   }
 
-  function nuevoEstudiante() {
-    estudiante = {
+  function nuevoMaestro() {
+    maestro = {
       id: 0,
       nombres: "",
       apellidos: "",
@@ -125,36 +125,36 @@
     dialogOpen = true;
   }
 
-  function editEstudiante(id: number) {
-    estudiante = estudiantes.find((e) => e.id === id, "");
-    console.log(estudiante);
+  function editMaestro(id: number) {
+    maestro = maestros.find((e) => e.id === id, "");
+    console.log(maestro);
     dialogOpen = true;
   }
 
-  function grabaEstudiante(est: Estudiante) {
-    console.log("Grabando estudiante:" + JSON.stringify(est));
+  function grabaMaestro(est: Maestro) {
+    console.log("Grabando maestro:" + JSON.stringify(est));
 
     httpClient
-      .post("students", est)
+      .post("maestros", est)
       .then((response) => {
         displayError = "";
         console.log(response.data);
         est = response.data.data;
         est = corrigeFechas(est);
 
-        // Actualiza el elemento en la lista de estudiantes
+        // Actualiza el elemento en la lista de maestros
         let found: boolean = false;
-        for (let i: number = 0; i < estudiantes.length - 1; i++) {
-          if (estudiantes[i].id === est.id) {
-            estudiantes[i] = est;
-            estudiantes = estudiantes;
+        for (let i: number = 0; i < maestros.length; i++) {
+          if (maestros[i].id === est.id) {
+            maestros[i] = est;
+            maestros = maestros;
             found = true;
             break;
           }
         }
         if (!found) {
-          estudiantes.push(est);
-          estudiantes = estudiantes;
+          maestros.push(est);
+          maestros = maestros;
         }
       })
       .catch((error) => {
@@ -162,23 +162,23 @@
       });
   }
 
-  function removeEstudiante(id: number) {
-    console.log("Eliminando estudiante id:" + id);
+  function removeMaestro(id: number) {
+    console.log("Eliminando maestro id:" + id);
 
     httpClient
-      .delete("students/" + id)
+      .delete("maestros/" + id)
       .then((response) => {
         displayError = "";
         console.log(response.data);
 
-        // Si el status de retorno es falso no se eliminó el estudiante
+        // Si el status de retorno es falso no se eliminó el maestro
         if (!response.data.data.status) return;
 
-        // Elimina el elemento en la lista de estudiantes
-        for (let i: number = 0; i < estudiantes.length; i++) {
-          if (estudiantes[i].id === id) {
-            estudiantes.splice(i, 1);
-            estudiantes = estudiantes;
+        // Elimina el elemento en la lista de maestros
+        for (let i: number = 0; i < maestros.length; i++) {
+          if (maestros[i].id === id) {
+            maestros.splice(i, 1);
+            maestros = maestros;
             break;
           }
         }
@@ -189,14 +189,14 @@
   }
 </script>
 
-<h3>Catálogo de estudiantes</h3>
+<h3>Catálogo de maestros</h3>
 <Button
   on:click={() => {
-    nuevoEstudiante();
+    nuevoMaestro();
   }}
   variant="raised"
 >
-  <Label>Nuevo estudiante</Label>
+  <Label>Nuevo maestro</Label>
 </Button>
 
 <span class="dispErr">{displayError}</span>
@@ -249,17 +249,17 @@
     </Row>
   </Head>
   <Body>
-    {#each estudiantes as item (item.id)}
+    {#each maestros as item (item.id)}
       <Row>
         <Cell>
-          <a href="#edit" on:click|preventDefault={() => editEstudiante(item.id)}
+          <a href="#edit" on:click|preventDefault={() => editMaestro(item.id)}
             ><Icon component={Svg} viewBox="0 0 24 24" style="width:24px;height:24px;">
               <path Color="blue" fill="currentColor" d={mdiPencil} />
             </Icon></a
           >
         </Cell>
         <Cell>
-          <a href="#delete" on:click|preventDefault={() => removeEstudiante(item.id)}
+          <a href="#delete" on:click|preventDefault={() => removeMaestro(item.id)}
             ><Icon component={Svg} viewBox="0 0 24 24" style="width:24px;height:24px;">
               <path Color="red" fill="currentColor" d={mdiTrashCanOutline} />
             </Icon></a
@@ -283,11 +283,11 @@
   on:MDCDialog:closed={closeDialogHandler}
 >
   <Header>
-    <Title id="fullscreen-title">Detalles del estudiante</Title>
+    <Title id="fullscreen-title">Detalles del maestro</Title>
     <IconButton action="close" class="material-icons">close</IconButton>
   </Header>
   <Content id="fullscreen-content">
-    <EstudianteDetail bind:estudiante />
+    <MaestroDetail bind:maestro />
   </Content>
   <Actions>
     <Button action="reject">
