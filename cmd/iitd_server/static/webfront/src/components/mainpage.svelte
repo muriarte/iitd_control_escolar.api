@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Drawer, { AppContent, Content,Header, Title, Subtitle, Scrim } from "@smui/drawer/styled";
-  import Button, { Label } from "@smui/button/styled";
+  import { Router, Link, Route, navigate } from "svelte-navigator";
+  import Drawer, { AppContent, Content, Header, Title, Subtitle, Scrim } from "@smui/drawer/styled";
   import IconButton from "@smui/icon-button/styled";
   import List, { Item, Text, Graphic, Separator, Subheader } from "@smui/list/styled";
   import H6 from "@smui/common/H6.svelte";
@@ -28,9 +28,17 @@
 
   function setActive(value: string) {
     active = value;
+    if (value === modCatEstudiantes) {
+      navigate("/estudiantes");
+    }
+    if (value === modCatMaestros) {
+      navigate("/maestros");
+    }
+    if (value === modCatMaterias) {
+      navigate("/materias");
+    }
     drawerIsOpen = false;
   }
-  
 </script>
 
 <!-- <div class="drawer-container"> -->
@@ -38,11 +46,11 @@
             It adds a style for absolute positioning. -->
 <!-- <Drawer variant="modal" fixed={false} bind:open> -->
 <Drawer variant="modal" bind:open={drawerIsOpen}>
-<Header>
-  <Title>{title}</Title>
-  <Subtitle>{subtitle}</Subtitle>
-</Header>
-<Content>
+  <Header>
+    <Title>{title}</Title>
+    <Subtitle>{subtitle}</Subtitle>
+  </Header>
+  <Content>
     <List>
       <Item
         href="javascript:void(0)"
@@ -80,28 +88,35 @@
     </List>
   </Content>
 </Drawer>
-
+<!-- Scrim crea una sombra que nubla el fondo de la pantalla para que resalte el drawer al abrirlo. -->
 <!-- Don't include fixed={false} if this is a page wide drawer.
             It adds a style for absolute positioning. -->
 <!-- <Scrim fixed={false} />  -->
 <Scrim />
 <AppContent class="app-content">
   <main class="main-content">
-    <IconButton class="material-icons" on:click={() => (drawerIsOpen = !drawerIsOpen)} ripple={false}>menu</IconButton>
-    <h3>{title} - {subtitle}</h3><br>
-    <!-- active:{active} -->
-    {#if active == modSplash}
-      <Splash />
-    {/if}
-    {#if active == modCatEstudiantes}
-      <CatalogoEstudiantes />
-    {/if}
-    {#if active == modCatMaestros}
-      <CatalogoMaestros />
-    {/if}
-    {#if active == modCatMaterias}
-      <CatalogoMaterias />
-    {/if}
+    <IconButton class="material-icons" on:click={() => (drawerIsOpen = !drawerIsOpen)} ripple={false}
+      >menu</IconButton
+    >
+    <h3>{title} - {subtitle}</h3>
+    <br />
+    <Router>
+      <nav>
+        <Link to="/">Home</Link>
+        <Link to="estudiantes">Estudiantes</Link>
+        <Link to="maestros">Maestros</Link>
+        <Link to="materias">Materias</Link>
+      </nav>
+      <div>
+        <Route path="/">
+          <Splash />
+        </Route>
+        <Route path="estudiantes" component={CatalogoEstudiantes} />
+        <Route path="maestros" component={CatalogoMaestros} />
+        <Route path="materias" component={CatalogoMaterias} />
+      </div>
+    </Router>
+
   </main>
 </AppContent>
 
@@ -120,7 +135,14 @@
     height: 100%;
     box-sizing: border-box;
   }
+
   h3 {
-    display:inline;
+    display: inline;
   }
+
+ * :global(nav a) {
+    font-family:roboto;
+    padding-right: 0.5em;
+ }
+
 </style>
