@@ -9,6 +9,7 @@
   import CatalogoEstudiantes from "./catalogoestudiantes.svelte";
   import CatalogoMaestros from "./catalogomaestros.svelte";
   import CatalogoMaterias from "./catalogomaterias.svelte";
+  import EstudianteMaterias from "./estudiantematerias.svelte";
 
   const modCatEstudiantes: string = "CatalogoEstudiantes";
   const modCatMaestros: string = "CatalogoMaestros";
@@ -111,12 +112,20 @@
         <Route path="/">
           <Splash />
         </Route>
-        <Route path="estudiantes" component={CatalogoEstudiantes} />
-        <Route path="maestros" component={CatalogoMaestros} />
-        <Route path="materias" component={CatalogoMaterias} />
+        <Route path="estudiantes">
+          <CatalogoEstudiantes />
+        </Route>
+        <Route path="maestros">
+          <CatalogoMaestros />
+        </Route>
+        <Route path="materias">
+          <CatalogoMaterias />
+        </Route>
+        <Route path="estudiantematerias/:estudianteId" let:params>
+          <EstudianteMaterias studentId={parseInt(params.estudianteId)} />
+        </Route>
       </div>
     </Router>
-
   </main>
 </AppContent>
 
@@ -140,9 +149,8 @@
     display: inline;
   }
 
- * :global(nav a) {
-    font-family:roboto;
+  * :global(nav a) {
+    font-family: roboto;
     padding-right: 0.5em;
- }
-
+  }
 </style>

@@ -6,14 +6,19 @@
   import Button from "@smui/button/styled";
   import Dialog, { Header, Title, Content, Actions } from "@smui/dialog/styled";
   import DataTable, { Head, Body, Row, Cell, SortValue } from "@smui/data-table/styled";
-  import EstudianteDetail from "./estudiantedetail.svelte";
+  import EstudianteMateriaDetail from "./estudiantemateriadetail.svelte";
   import type { Estudiante } from "../models/estudiante";
+  import { EstudianteMateria } from "../models/estudiantemateria";
   import axios from "axios/dist/axios";
 
   import { useLocation, useNavigate } from "svelte-navigator";
+  import { debug } from "svelte/internal";
+
+  export let studentId: number = 0;
+
   const navigate = useNavigate();
   const loc = useLocation();
-  $: console.log("catalogoestudiantes");
+  $: console.log("estudiantematerias");
   $: console.log($loc);
 
   let urlpathprefix: string = location.protocol + "//" + location.host + "/v1/";
@@ -24,15 +29,16 @@
 
   let dialogOpen: boolean = false;
 
-  let estudiante: Estudiante;
-  let estudiantes: Estudiante[] = [];
+  let estudianteMateria: EstudianteMateria;
+  let materias: EstudianteMateria[] = [];
   let sort: keyof Estudiante = "id";
   // let sortDirection: Lowercase<keyof typeof SortValue> = "ascending";
   let sortDirection: string | number | symbol = "ascending";
 
   let displayError: string = "";
+  let clonedEstudianteMateria: EstudianteMateria = EstudianteMateria.newEmpty();
 
-  cargaEstudiantes();
+  cargaEstudianteMaterias(studentId);
 
   function closeDialogHandler(e: CustomEvent<{ action: string }>) {
     switch (e.detail.action) {
@@ -41,9 +47,31 @@
         break;
       case "accept":
         displayError = "Grabando!";
-        if (grabaEstudiante(estudiante)) {
-          displayError = "";
+        // Detectamos y corregimos un comportamiento erroneo que se
+        // presenta cuando editamos por primera vez una materia del
+        // alumno inmediatamente despues de desplegarse la lista de
+        // materias del alumno (no pudimos encontrar la causa)
+        if (clonedEstudianteMateria.materiaId === undefined) {
+          var found: boolean = false;
+          for (let i: number = 0; i < materias.length; i++) {
+            if (materias[i].id === clonedEstudianteMateria.id) {
+              clonedEstudianteMateria.materiaId = materias[i].materiaId;
+              console.log(
+                "Pudimos corregir caso de cuando el campo materiaId se vuelve undefined:" +
+                  clonedEstudianteMateria.materiaId
+              );
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            console.log("No pudimos corregir caso de cuando el campo materiaId se vuelve undefined");
+          }
         }
+        //Fin de deteccion y correccion de error
+
+        grabaEstudianteMateria(clonedEstudianteMateria);
+        displayError = "";
         break;
       default:
         // This means the user clicked the scrim or pressed Esc to close the dialog.
@@ -54,104 +82,79 @@
   }
 
   function handleSort() {
-    estudiantes.sort((a, b) => {
+    materias.sort((a, b) => {
       const [aVal, bVal] = [a[sort], b[sort]][sortDirection === "ascending" ? "slice" : "reverse"]();
       if (typeof aVal === "string" && typeof bVal === "string") {
         return aVal.localeCompare(bVal);
       }
       return Number(aVal) - Number(bVal);
     });
-    estudiantes = estudiantes;
+    materias = materias;
   }
 
-  function cargaEstudiantes(): boolean {
+  function cargaEstudianteMaterias(studentId: number) {
     displayError = "Por favor espere...";
     // Vaciamos el array
-    estudiantes.splice(0, estudiantes.length);
+    materias.splice(0, materias.length);
 
     console.log("Cargando lista de estudiantes... ");
 
     httpClient
-      .get("students")
+      .get("studentmaterias?studentId=" + studentId)
       .then((response) => {
         displayError = "";
         console.log(response.data);
 
         // Llena la tabla
         if (!response.data.data) {
-          console.log("Empty students list");
+          console.log("Empty student materias list");
           return;
         }
-        let item: Estudiante;
+        let item: EstudianteMateria;
         for (item of response.data.data) {
           item = corrigeFechas(item);
-          estudiantes.push(item);
+          materias.push(item);
         }
-        estudiantes = estudiantes;
+        materias = materias;
 
-        console.log("Lista de estudiantes:");
-        console.log(estudiantes);
+        console.log("Lista de estudiante-materias:");
+        console.log(materias);
       })
       .catch((error) => {
         displayError = error;
-        return false;
       });
-    return true;
   }
 
-  function corrigeFechas(item: Estudiante): Estudiante {
-    if (item.nacimiento && item.nacimiento.length > 10) {
-      item.nacimiento = item.nacimiento.substr(0, 10);
+  function corrigeFechas(item: EstudianteMateria): EstudianteMateria {
+    if (item.inicio && item.inicio.length > 10) {
+      item.inicio = item.inicio.substr(0, 10);
     }
-    if (item.fechaInicio && item.fechaInicio.length > 10) {
-      item.fechaInicio = item.fechaInicio.substr(0, 10);
+    if (item.fin && item.fin.length > 10) {
+      item.fin = item.fin.substr(0, 10);
     }
     return item;
   }
 
-  function nuevoEstudiante() {
-    estudiante = {
-      id: 0,
-      nombres: "",
-      apellidos: "",
-      nacimiento: "2000-01-01",
-      sexo: "",
-      calle: "",
-      numeroExt: "",
-      numeroInt: "",
-      colonia: "",
-      municipio: "",
-      estado: "",
-      pais: "",
-      cp: "",
-      telCasa: "",
-      telCelular: "",
-      email: "",
-      fechaInicio: "2000-01-01",
-      observaciones: "",
-      activo: "S",
-    };
+  function nuevoEstudianteMateria(studentId: number) {
+    // estudianteMateria = new EstudianteMateria(0, studentId, 0, "", "2000-01-01", "2000-01-01", "");
+    clonedEstudianteMateria = EstudianteMateria.guaranteedClone(estudianteMateria);
+
     dialogOpen = true;
   }
 
-  function editEstudiante(id: number) {
-    estudiante = estudiantes.find((e) => e.id === id, "");
-    console.log(estudiante);
+  function editEstudianteMateria(id: number) {
+    estudianteMateria = materias.find((e) => e.id === id, "");
+    clonedEstudianteMateria = EstudianteMateria.guaranteedClone(estudianteMateria);
+
+    console.log(clonedEstudianteMateria);
     dialogOpen = true;
   }
 
-  function showMaterias(estudianteId: number) {
-    navigate("/estudiantematerias/" + estudianteId, {
-      replace: false,
-      state: {},
-    });
-  }
-
-  function grabaEstudiante(est: Estudiante): boolean {
-    console.log("Grabando estudiante:" + JSON.stringify(est));
+  function grabaEstudianteMateria(est: EstudianteMateria) {
+    console.log("Grabando estudiante-materia:" + JSON.stringify(est));
 
     httpClient
-      .post("students", est)
+      .post("studentmaterias", est)
       .then((response) => {
         displayError = "";
         console.log(response.data);
@@ -160,31 +163,29 @@
 
         // Actualiza el elemento en la lista de estudiantes
         let found: boolean = false;
-        for (let i: number = 0; i < estudiantes.length; i++) {
-          if (estudiantes[i].id === est.id) {
-            estudiantes[i] = est;
-            estudiantes = estudiantes;
+        for (let i: number = 0; i < materias.length; i++) {
+          if (materias[i].id === est.id) {
+            materias[i] = est;
+            materias = materias;
             found = true;
             break;
           }
         }
         if (!found) {
-          estudiantes.push(est);
-          estudiantes = estudiantes;
+          materias.push(est);
+          materias = materias;
         }
       })
       .catch((error) => {
         displayError = error;
-        return false;
       });
-    return true;
   }
 
-  function removeEstudiante(id: number): boolean {
+  function removeEstudiante(id: number) {
     console.log("Eliminando estudiante id:" + id);
 
     httpClient
-      .delete("students/" + id)
+      .delete("studentmaterias/" + id)
       .then((response) => {
         displayError = "";
         console.log(response.data);
@@ -193,30 +194,30 @@
         if (!response.data.data.status) return;
 
         // Elimina el elemento en la lista de estudiantes
-        for (let i: number = 0; i < estudiantes.length; i++) {
-          if (estudiantes[i].id === id) {
-            estudiantes.splice(i, 1);
-            estudiantes = estudiantes;
+        for (let i: number = 0; i < materias.length; i++) {
+          if (materias[i].id === id) {
+            materias.splice(i, 1);
+            materias = materias;
             break;
           }
         }
       })
       .catch((error) => {
         displayError = error;
-        return false;
       });
-    return true;
   }
 </script>
 
-<h3>Catálogo de estudiantes</h3>
+<!-- {@debug estudianteMateria}; -->
+
+<h3>Materias del estudiante</h3>
 <Button
   on:click={() => {
-    nuevoEstudiante();
+    nuevoEstudianteMateria(studentId);
   }}
   variant="raised"
 >
-  <Label>Nuevo estudiante</Label>
+  <Label>Agregar materia</Label>
 </Button>
 
 <span class="dispErr">{displayError}</span>
@@ -243,37 +244,41 @@
       -->
       <Cell />
       <Cell />
-      <Cell />
-      <Cell numeric columnId="id">
-        <!-- For numeric columns, icon comes first. -->
+      <!-- <Cell numeric columnId="id">
+        < !-- For numeric columns, icon comes first. -- >
         <IconButton class="material-icons">arrow_upward</IconButton>
         <Label>ID</Label>
       </Cell>
-      <Cell columnId="nombres" style="width: 100%;">
-        <Label>Nombre(s)</Label>
+      <Cell numeric columnId="materiaId">
+        < !-- For numeric columns, icon comes first. -- >
+        <IconButton class="material-icons">arrow_upward</IconButton>
+        <Label>ID Materia</Label>
+      </Cell> -->
+      <Cell columnId="nombreMateria" style="width: 100%;">
+        <Label>Nombre de la materia</Label>
         <!-- For non-numeric columns, icon comes second. -->
         <IconButton class="material-icons">arrow_upward</IconButton>
       </Cell>
-      <Cell columnId="apellidos">
-        <Label>Apellido(s)</Label>
+      <Cell columnId="inicio">
+        <Label>Fecha Inicio</Label>
         <IconButton class="material-icons">arrow_upward</IconButton>
       </Cell>
-      <Cell columnId="email">
-        <Label>Email</Label>
+      <Cell columnId="fin">
+        <Label>Fecha fin</Label>
         <IconButton class="material-icons">arrow_upward</IconButton>
       </Cell>
       <!-- You can turn off sorting for a column. -->
-      <Cell columnId="fechaInicio">
+      <Cell columnId="observaciones">
         <IconButton class="material-icons">arrow_upward</IconButton>
-        <Label>Fecha de Inicio</Label>
+        <Label>Observaciones</Label>
       </Cell>
     </Row>
   </Head>
   <Body>
-    {#each estudiantes as item (item.id)}
+    {#each materias as item (item.id)}
       <Row>
         <Cell>
-          <a href="#edit" on:click|preventDefault={() => editEstudiante(item.id)}
+          <a href="#edit" on:click|preventDefault={() => editEstudianteMateria(item.id)}
             ><Icon component={Svg} viewBox="0 0 24 24" style="width:24px;height:24px;">
               <path Color="blue" fill="currentColor" d={mdiPencil} />
             </Icon></a
@@ -286,18 +291,12 @@
             </Icon></a
           >
         </Cell>
-        <Cell>
-          <a href="#materias" on:click|preventDefault={() => showMaterias(item.id)}
-            ><Icon component={Svg} viewBox="0 0 24 24" style="width:24px;height:24px;">
-              <path Color="red" fill="currentColor" d={mdiBook} />
-            </Icon></a
-          >
-        </Cell>
-        <Cell numeric>{item.id}</Cell>
-        <Cell>{item.nombres}</Cell>
-        <Cell>{item.apellidos}</Cell>
-        <Cell>{item.email}</Cell>
-        <Cell>{item.fechaInicio}</Cell>
+        <!-- <Cell numeric>{item.id}</Cell>
+        <Cell>{item.materiaId}</Cell> -->
+        <Cell>{item.materiaNombre}({item.id})({item.materiaId})</Cell>
+        <Cell>{item.inicio}</Cell>
+        <Cell>{item.fin}</Cell>
+        <Cell>{item.observaciones}</Cell>
       </Row>
     {/each}
   </Body>
@@ -315,14 +314,14 @@
     <IconButton action="close" class="material-icons">close</IconButton>
   </Header>
   <Content id="fullscreen-content">
-    <EstudianteDetail bind:estudiante />
+    <EstudianteMateriaDetail bind:estudianteMateria={clonedEstudianteMateria} />
   </Content>
   <Actions>
     <Button action="reject">
-      <Label>Reject</Label>
+      <Label>Cancelar</Label>
     </Button>
     <Button action="accept" defaultAction>
-      <Label>Accept</Label>
+      <Label>Aceptar</Label>
     </Button>
   </Actions>
 </Dialog>

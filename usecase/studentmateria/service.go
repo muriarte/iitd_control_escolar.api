@@ -19,10 +19,14 @@ func NewService(r Repository) *Service {
 }
 
 //CreateStudentMateria Create an studentmateria
-func (s *Service) CreateStudentMateria(studentId, materiaId int, inicio, fin time.Time, observaciones string) (int, error) {
+func (s *Service) CreateStudentMateria(studentId, materiaId int, inicio, fin time.Time, observaciones string) (int, string, error) {
 	e, err := entity.NewStudentMateria(studentId, materiaId, inicio, fin, observaciones)
 	if err != nil {
-		return e.ID, err
+		return 0, "", err
+	}
+	err = e.Validate()
+	if err != nil {
+		return 0, "", entity.ErrInvalidEntity
 	}
 	return s.repo.Create(e)
 }
@@ -58,10 +62,10 @@ func (s *Service) DeleteStudentMateria(id int) error {
 }
 
 //UpdateStudentMateria Update an studentmateria
-func (s *Service) UpdateStudentMateria(e *entity.StudentMateria) error {
+func (s *Service) UpdateStudentMateria(e *entity.StudentMateria) (string, error) {
 	err := e.Validate()
 	if err != nil {
-		return entity.ErrInvalidEntity
+		return "", entity.ErrInvalidEntity
 	}
 	//e.UpdatedAt = time.Now()
 	return s.repo.Update(e)

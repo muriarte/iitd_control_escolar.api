@@ -15,8 +15,8 @@ type Reader interface {
 
 //Writer studentmateria writer
 type Writer interface {
-	Create(e *entity.StudentMateria) (int, error)
-	Update(e *entity.StudentMateria) error
+	Create(e *entity.StudentMateria) (int, string, error)
+	Update(e *entity.StudentMateria) (string, error)
 	Delete(id int) error
 }
 
@@ -31,7 +31,7 @@ type UseCase interface {
 	GetStudentMateria(id int) (*entity.StudentMateria, error)
 	SearchStudentMaterias(studentId int, materiaId int) ([]*entity.StudentMateria, error)
 	ListStudentMaterias() ([]*entity.StudentMateria, error)
-	CreateStudentMateria(studentId, materiaId int, inicio, fin time.Time, observaciones string) (int, error)
-	UpdateStudentMateria(e *entity.StudentMateria) error
+	CreateStudentMateria(studentId, materiaId int, inicio, fin time.Time, observaciones string) (int, string, error)
+	UpdateStudentMateria(e *entity.StudentMateria) (string, error)
 	DeleteStudentMateria(id int) error
 }

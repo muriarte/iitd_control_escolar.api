@@ -5,12 +5,12 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/urfave/negroni"
 	"iitd_control_escolar.api/api/presenter"
 	"iitd_control_escolar.api/entity"
+	jd "iitd_control_escolar.api/pkg/jsondate"
 	"iitd_control_escolar.api/usecase/studentmateria"
 )
 
@@ -26,14 +26,19 @@ func listStudentMaterias(service studentmateria.UseCase) http.Handler {
 		case studentIdStr == "" && materiaIdStr == "":
 			data, err = service.ListStudentMaterias()
 		default:
-			studentId, err = strconv.Atoi(studentIdStr)
-			if err != nil {
-				sendErrorResponse(w, http.StatusBadRequest, err_query_param_value, err)
-				return
+			if studentIdStr != "" {
+				studentId, err = strconv.Atoi(studentIdStr)
+				if err != nil {
+					sendErrorResponse(w, http.StatusBadRequest, err_query_param_value, err)
+					return
+				}
 			}
-			materiaId, err = strconv.Atoi(materiaIdStr)
-			if err != nil {
-				sendErrorResponse(w, http.StatusBadRequest, err_query_param_value, err)
+			if materiaIdStr != "" {
+				materiaId, err = strconv.Atoi(materiaIdStr)
+				if err != nil {
+					sendErrorResponse(w, http.StatusBadRequest, err_query_param_value, err)
+					return
+				}
 			}
 			data, err = service.SearchStudentMaterias(studentId, materiaId)
 		}
@@ -52,6 +57,7 @@ func listStudentMaterias(service studentmateria.UseCase) http.Handler {
 				ID:            d.ID,
 				StudentId:     d.StudentId,
 				MateriaId:     d.MateriaId,
+				MateriaNombre: d.MateriaNombre,
 				Inicio:        d.Inicio,
 				Fin:           d.Fin,
 				Observaciones: d.Observaciones,
@@ -64,12 +70,12 @@ func listStudentMaterias(service studentmateria.UseCase) http.Handler {
 func createStudentMateria(service studentmateria.UseCase) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var input struct {
-			ID            int       `json:"id"`
-			StudentId     int       `json:"studentId"`
-			MateriaId     int       `json:"materiaId"`
-			Inicio        time.Time `json:"inicio"`
-			Fin           time.Time `json:"fin"`
-			Observaciones string    `json:"observaciones"`
+			ID            int         `json:"id"`
+			StudentId     int         `json:"studentId"`
+			MateriaId     int         `json:"materiaId"`
+			Inicio        jd.JsonDate `json:"inicio"`
+			Fin           jd.JsonDate `json:"fin"`
+			Observaciones string      `json:"observaciones"`
 		}
 		err := json.NewDecoder(r.Body).Decode(&input)
 		if err != nil {
@@ -79,15 +85,16 @@ func createStudentMateria(service studentmateria.UseCase) http.Handler {
 		}
 		var id int
 		var s *entity.StudentMateria
+		var materiaNombre string
 		if input.ID == 0 {
-			id, err = service.CreateStudentMateria(input.StudentId, input.MateriaId, input.Inicio, input.Fin, input.Observaciones)
+			id, materiaNombre, err = service.CreateStudentMateria(input.StudentId, input.MateriaId, input.Inicio.ToTime(), input.Fin.ToTime(), input.Observaciones)
 			if err != nil {
 				sendErrorResponse(w, http.StatusInternalServerError, err_db_inserting, err)
 				return
 			}
 		} else {
 			id = input.ID
-			s, err = entity.NewStudentMateria(input.StudentId, input.MateriaId, input.Inicio, input.Fin, input.Observaciones)
+			s, err = entity.NewStudentMateria(input.StudentId, input.MateriaId, input.Inicio.ToTime(), input.Fin.ToTime(), input.Observaciones)
 			if err != nil {
 				sendErrorResponse(w, http.StatusInternalServerError, err_building_object, err)
 				return
@@ -97,7 +104,7 @@ func createStudentMateria(service studentmateria.UseCase) http.Handler {
 				return
 			}
 			s.ID = input.ID
-			err = service.UpdateStudentMateria(s)
+			materiaNombre, err = service.UpdateStudentMateria(s)
 			if err != nil {
 				sendErrorResponse(w, http.StatusInternalServerError, err_db_updating, err)
 				return
@@ -107,8 +114,9 @@ func createStudentMateria(service studentmateria.UseCase) http.Handler {
 			ID:            id,
 			StudentId:     input.StudentId,
 			MateriaId:     input.MateriaId,
-			Inicio:        input.Inicio,
-			Fin:           input.Fin,
+			MateriaNombre: materiaNombre,
+			Inicio:        input.Inicio.ToTime(),
+			Fin:           input.Fin.ToTime(),
 			Observaciones: input.Observaciones,
 		}
 		sendOkResponse(w, http.StatusOK, toJ)
@@ -137,6 +145,7 @@ func getStudentMateria(service studentmateria.UseCase) http.Handler {
 			ID:            data.ID,
 			StudentId:     data.StudentId,
 			MateriaId:     data.MateriaId,
+			MateriaNombre: data.MateriaNombre,
 			Inicio:        data.Inicio,
 			Fin:           data.Fin,
 			Observaciones: data.Observaciones,
