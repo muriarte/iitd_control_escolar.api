@@ -1,6 +1,6 @@
 <script lang="ts">
   import IconButton, { Icon } from "@smui/icon-button/styled";
-  import Svg from "@smui/common/Svg.svelte";
+  import Svg from "@smui/common/elements/Svg.svelte";
   import { mdiPlus, mdiTrashCanOutline, mdiPencil, mdiBook } from "@mdi/js";
   import { Label } from "@smui/common/styled";
   import Button from "@smui/button/styled";

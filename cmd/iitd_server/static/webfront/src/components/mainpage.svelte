@@ -3,7 +3,7 @@
   import Drawer, { AppContent, Content, Header, Title, Subtitle, Scrim } from "@smui/drawer/styled";
   import IconButton from "@smui/icon-button/styled";
   import List, { Item, Text, Graphic, Separator, Subheader } from "@smui/list/styled";
-  import H6 from "@smui/common/H6.svelte";
+  import H6 from "@smui/common/elements/H6.svelte";
 
   import Splash from "./splash.svelte";
   import CatalogoEstudiantes from "./catalogoestudiantes.svelte";
