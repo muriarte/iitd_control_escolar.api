@@ -29,6 +29,10 @@
 
   let dialogOpen: boolean = false;
 
+  let yesnoDialogOpen: boolean = false;
+  let yesnoMsg: string = "";
+  let idToRemove: number = 0;
+
   let estudianteMateria: EstudianteMateria;
   let materias: EstudianteMateria[] = [];
   let sort: keyof Estudiante = "id";
@@ -42,10 +46,10 @@
 
   function closeDialogHandler(e: CustomEvent<{ action: string }>) {
     switch (e.detail.action) {
-      case "reject":
+      case "cancelar":
         displayError = "Cancelado por el usuario.";
         break;
-      case "accept":
+      case "aceptar":
         displayError = "Grabando!";
         // Detectamos y corregimos un comportamiento erroneo que se
         // presenta cuando editamos por primera vez una materia del
@@ -136,7 +140,7 @@
   }
 
   function nuevoEstudianteMateria(studentId: number) {
-    // estudianteMateria = new EstudianteMateria(0, studentId, 0, "", "2000-01-01", "2000-01-01", "");
+    estudianteMateria = new EstudianteMateria(0, studentId, 0, "", "2000-01-01", "2000-01-01", "");
     clonedEstudianteMateria = EstudianteMateria.guaranteedClone(estudianteMateria);
 
     dialogOpen = true;
@@ -181,7 +185,26 @@
       });
   }
 
-  function removeEstudiante(id: number) {
+  // ELIMINAR EstudianteMateria
+  function eliminaEstudianteMateriaAsk(id: number, name: string) {
+    idToRemove = id;
+    yesnoMsg = id + "-" + name;
+    yesnoDialogOpen = true;
+  }
+
+  function closeYesnoDialogHandler(e: CustomEvent<{ action: string }>) {
+    switch (e.detail.action) {
+      case "Si":
+        displayError = "Borrando!";
+        eliminaEstudianteMateria(idToRemove);
+        break;
+      case "No":
+        displayError = "Cancelado por el usuario.";
+        break;
+    }
+  }
+
+  function eliminaEstudianteMateria(id: number) {
     console.log("Eliminando estudiante id:" + id);
 
     httpClient
@@ -285,7 +308,9 @@
           >
         </Cell>
         <Cell>
-          <a href="#delete" on:click|preventDefault={() => removeEstudiante(item.id)}
+          <a
+            href="#delete"
+            on:click|preventDefault={() => eliminaEstudianteMateriaAsk(item.id, item.materiaNombre)}
             ><Icon component={Svg} viewBox="0 0 24 24" style="width:24px;height:24px;">
               <path Color="red" fill="currentColor" d={mdiTrashCanOutline} />
             </Icon></a
@@ -317,11 +342,33 @@
     <EstudianteMateriaDetail bind:estudianteMateria={clonedEstudianteMateria} />
   </Content>
   <Actions>
-    <Button action="reject">
+    <Button action="cancelar">
       <Label>Cancelar</Label>
     </Button>
-    <Button action="accept" defaultAction>
+    <Button action="aceptar" defaultAction>
       <Label>Aceptar</Label>
+    </Button>
+  </Actions>
+</Dialog>
+
+<Dialog
+  bind:open={yesnoDialogOpen}
+  aria-labelledby="fullscreen-title"
+  aria-describedby="fullscreen-content"
+  on:MDCDialog:closed={closeYesnoDialogHandler}
+>
+  <Header>
+    <Title id="fullscreen-title">Eliminar materia del estudiante</Title>
+  </Header>
+  <Content id="fullscreen-content">
+    <Label>¿Desea eliminar la materia [{yesnoMsg}] del estudiante seleccionado?</Label>
+  </Content>
+  <Actions>
+    <Button action="No" defaultAction>
+      <Label>No</Label>
+    </Button>
+    <Button action="Si">
+      <Label>Si</Label>
     </Button>
   </Actions>
 </Dialog>

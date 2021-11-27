@@ -24,6 +24,10 @@
 
   let dialogOpen: boolean = false;
 
+  let yesnoDialogOpen: boolean = false;
+  let yesnoMsg: string = "";
+  let idToRemove: number = 0;
+
   let estudiante: Estudiante;
   let estudiantes: Estudiante[] = [];
   let sort: keyof Estudiante = "id";
@@ -36,10 +40,10 @@
 
   function closeDialogHandler(e: CustomEvent<{ action: string }>) {
     switch (e.detail.action) {
-      case "reject":
+      case "cancelar":
         displayError = "Cancelado por el usuario.";
         break;
-      case "accept":
+      case "aceptar":
         displayError = "Grabando!";
         if (grabaEstudiante(estudiante)) {
           displayError = "";
@@ -180,7 +184,26 @@
     return true;
   }
 
-  function removeEstudiante(id: number): boolean {
+  // ELIMINAR Estudiante
+  function eliminaEstudianteAsk(id: number, name: string) {
+    idToRemove = id;
+    yesnoMsg = id + "-" + name;
+    yesnoDialogOpen = true;
+  }
+
+  function closeYesnoDialogHandler(e: CustomEvent<{ action: string }>) {
+    switch (e.detail.action) {
+      case "Si":
+        displayError = "Borrando!";
+        eliminaEstudiante(idToRemove);
+        break;
+      case "No":
+        displayError = "Cancelado por el usuario.";
+        break;
+    }
+  }
+
+  function eliminaEstudiante(id: number): boolean {
     console.log("Eliminando estudiante id:" + id);
 
     httpClient
@@ -280,7 +303,7 @@
           >
         </Cell>
         <Cell>
-          <a href="#delete" on:click|preventDefault={() => removeEstudiante(item.id)}
+          <a href="#delete" on:click|preventDefault={() => eliminaEstudianteAsk(item.id, item.apellidos + " / " + item.nombres)}
             ><Icon component={Svg} viewBox="0 0 24 24" style="width:24px;height:24px;">
               <path Color="red" fill="currentColor" d={mdiTrashCanOutline} />
             </Icon></a
@@ -318,11 +341,33 @@
     <EstudianteDetail bind:estudiante />
   </Content>
   <Actions>
-    <Button action="reject">
-      <Label>Reject</Label>
+    <Button action="cancelar">
+      <Label>Cancelar</Label>
     </Button>
-    <Button action="accept" defaultAction>
-      <Label>Accept</Label>
+    <Button action="aceptar" defaultAction>
+      <Label>Aceptar</Label>
+    </Button>
+  </Actions>
+</Dialog>
+
+<Dialog
+  bind:open={yesnoDialogOpen}
+  aria-labelledby="fullscreen-title"
+  aria-describedby="fullscreen-content"
+  on:MDCDialog:closed={closeYesnoDialogHandler}
+>
+  <Header>
+    <Title id="fullscreen-title">Eliminar estudiante</Title>
+  </Header>
+  <Content id="fullscreen-content">
+    <Label>¿Desea eliminar el estudiante [{yesnoMsg}]?</Label>
+  </Content>
+  <Actions>
+    <Button action="No" defaultAction>
+      <Label>No</Label>
+    </Button>
+    <Button action="Si">
+      <Label>Si</Label>
     </Button>
   </Actions>
 </Dialog>

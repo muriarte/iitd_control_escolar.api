@@ -18,6 +18,10 @@
 
   let dialogOpen: boolean = false;
 
+  let yesnoDialogOpen: boolean = false;
+  let yesnoMsg: string = "";
+  let idToRemove: number = 0;
+
   let materia: Materia;
   let materias: Materia[] = [];
   let sort: keyof Materia = "id";
@@ -30,10 +34,10 @@
 
   function closeDialogHandler(e: CustomEvent<{ action: string }>) {
     switch (e.detail.action) {
-      case "reject":
+      case "cancelar":
         displayError = "Cancelado por el usuario.";
         break;
-      case "accept":
+      case "aceptar":
         displayError = "Grabando!";
         grabaMateria(materia);
         displayError = "";
@@ -144,7 +148,26 @@
       });
   }
 
-  function removeMateria(id: number) {
+  // ELIMINAR Materia
+  function eliminaMateriaAsk(id: number, name: string) {
+    idToRemove = id;
+    yesnoMsg = id + "-" + name;
+    yesnoDialogOpen = true;
+  }
+
+  function closeYesnoDialogHandler(e: CustomEvent<{ action: string }>) {
+    switch (e.detail.action) {
+      case "Si":
+        displayError = "Borrando!";
+        eliminaMateria(idToRemove);
+        break;
+      case "No":
+        displayError = "Cancelado por el usuario.";
+        break;
+    }
+  }
+
+  function eliminaMateria(id: number) {
     console.log("Eliminando materia id:" + id);
 
     httpClient
@@ -236,7 +259,7 @@
           >
         </Cell>
         <Cell>
-          <a href="#delete" on:click|preventDefault={() => removeMateria(item.id)}
+          <a href="#delete" on:click|preventDefault={() => eliminaMateriaAsk(item.id, item.nombre)}
             ><Icon component={Svg} viewBox="0 0 24 24" style="width:24px;height:24px;">
               <path Color="red" fill="currentColor" d={mdiTrashCanOutline} />
             </Icon></a
@@ -266,11 +289,33 @@
     <MateriaDetail bind:materia />
   </Content>
   <Actions>
-    <Button action="reject">
-      <Label>Reject</Label>
+    <Button action="cancelar">
+      <Label>Cancelar</Label>
     </Button>
-    <Button action="accept" defaultAction>
-      <Label>Accept</Label>
+    <Button action="aceptar" defaultAction>
+      <Label>Aceptar</Label>
+    </Button>
+  </Actions>
+</Dialog>
+
+<Dialog
+  bind:open={yesnoDialogOpen}
+  aria-labelledby="fullscreen-title"
+  aria-describedby="fullscreen-content"
+  on:MDCDialog:closed={closeYesnoDialogHandler}
+>
+  <Header>
+    <Title id="fullscreen-title">Eliminar materia</Title>
+  </Header>
+  <Content id="fullscreen-content">
+    <Label>¿Desea eliminar la materia [{yesnoMsg}]?</Label>
+  </Content>
+  <Actions>
+    <Button action="No" defaultAction>
+      <Label>No</Label>
+    </Button>
+    <Button action="Si">
+      <Label>Si</Label>
     </Button>
   </Actions>
 </Dialog>

@@ -18,6 +18,10 @@
 
   let dialogOpen: boolean = false;
 
+  let yesnoDialogOpen: boolean = false;
+  let yesnoMsg: string = "";
+  let idToRemove: number = 0;
+
   let maestro: Maestro;
   let maestros: Maestro[] = [];
   let sort: keyof Maestro = "id";
@@ -30,10 +34,10 @@
 
   function closeDialogHandler(e: CustomEvent<{ action: string }>) {
     switch (e.detail.action) {
-      case "reject":
+      case "cancelar":
         displayError = "Cancelado por el usuario.";
         break;
-      case "accept":
+      case "aceptar":
         displayError = "Grabando!";
         grabaMaestro(maestro);
         displayError = "";
@@ -162,7 +166,26 @@
       });
   }
 
-  function removeMaestro(id: number) {
+  // ELIMINAR Maestro
+  function eliminaMaestroAsk(id: number, name: string) {
+    idToRemove = id;
+    yesnoMsg = id + "-" + name;
+    yesnoDialogOpen = true;
+  }
+
+  function closeYesnoDialogHandler(e: CustomEvent<{ action: string }>) {
+    switch (e.detail.action) {
+      case "Si":
+        displayError = "Borrando!";
+        eliminaMaestro(idToRemove);
+        break;
+      case "No":
+        displayError = "Cancelado por el usuario.";
+        break;
+    }
+  }
+
+  function eliminaMaestro(id: number) {
     console.log("Eliminando maestro id:" + id);
 
     httpClient
@@ -259,7 +282,7 @@
           >
         </Cell>
         <Cell>
-          <a href="#delete" on:click|preventDefault={() => removeMaestro(item.id)}
+          <a href="#delete" on:click|preventDefault={() => eliminaMaestroAsk(item.id, item.apellidos + " / " + item.nombres)}
             ><Icon component={Svg} viewBox="0 0 24 24" style="width:24px;height:24px;">
               <path Color="red" fill="currentColor" d={mdiTrashCanOutline} />
             </Icon></a
@@ -290,11 +313,33 @@
     <MaestroDetail bind:maestro />
   </Content>
   <Actions>
-    <Button action="reject">
-      <Label>Reject</Label>
+    <Button action="cancelar">
+      <Label>Cancelar</Label>
     </Button>
-    <Button action="accept" defaultAction>
-      <Label>Accept</Label>
+    <Button action="aceptar" defaultAction>
+      <Label>Aceptar</Label>
+    </Button>
+  </Actions>
+</Dialog>
+
+<Dialog
+  bind:open={yesnoDialogOpen}
+  aria-labelledby="fullscreen-title"
+  aria-describedby="fullscreen-content"
+  on:MDCDialog:closed={closeYesnoDialogHandler}
+>
+  <Header>
+    <Title id="fullscreen-title">Eliminar maestro</Title>
+  </Header>
+  <Content id="fullscreen-content">
+    <Label>¿Desea eliminar el maestro [{yesnoMsg}]?</Label>
+  </Content>
+  <Actions>
+    <Button action="No" defaultAction>
+      <Label>No</Label>
+    </Button>
+    <Button action="Si">
+      <Label>Si</Label>
     </Button>
   </Actions>
 </Dialog>
