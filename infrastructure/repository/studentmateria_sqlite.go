@@ -109,7 +109,7 @@ func (r *StudentMateriaSQLite) Search(studentId int, materiaId int) ([]*entity.S
 	if materiaId > 0 {
 		query = fmt.Sprintf("%s%ssm.materiaId = %d", query, connector, materiaId)
 	}
-	var sqlStr = fmt.Sprintf("select sm.id,m.nombre,%s from studentmaterias sm left join materias m on m.id=sm.materiaid %s", StudentMateriasFieldListPrefixed, query)
+	var sqlStr = fmt.Sprintf("select sm.id,m.nombre,%s from studentmaterias sm left join materias m on m.id=sm.materiaid %s order by sm.studentid,sm.inicio,sm.fin", StudentMateriasFieldListPrefixed, query)
 	stmt, err := r.db.Prepare(sqlStr)
 	if err != nil {
 		return nil, err
@@ -138,7 +138,7 @@ func (r *StudentMateriaSQLite) Search(studentId int, materiaId int) ([]*entity.S
 
 //List studentmateriass
 func (r *StudentMateriaSQLite) List() ([]*entity.StudentMateria, error) {
-	var sqlStr = fmt.Sprintf("select sm.id, m.nombre, %s from studentmaterias sm left join materias m on m.id=sm.materiaid ", StudentMateriasFieldListPrefixed)
+	var sqlStr = fmt.Sprintf("select sm.id, m.nombre, %s from studentmaterias sm left join materias m on m.id=sm.materiaid order by sm.studentid,sm.inicio,sm.fin", StudentMateriasFieldListPrefixed)
 	stmt, err := r.db.Prepare(sqlStr)
 	if err != nil {
 		return nil, err
