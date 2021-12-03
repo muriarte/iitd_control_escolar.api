@@ -1,19 +1,25 @@
 <script lang="ts">
   import IconButton, { Icon } from "@smui/icon-button/styled";
   import Svg from "@smui/common/elements/Svg.svelte";
-  import { mdiPlus, mdiTrashCanOutline, mdiPencil, mdiBook, mdiNoteTextOutline } from "@mdi/js";
+  import { mdiPlus, mdiTrashCanOutline, mdiPencil, mdiBook } from "@mdi/js";
   import { Label } from "@smui/common/styled";
   import Button from "@smui/button/styled";
   import Dialog, { Header, Title, Content, Actions } from "@smui/dialog/styled";
   import DataTable, { Head, Body, Row, Cell, SortValue } from "@smui/data-table/styled";
-  import EstudianteDetail from "./estudiantedetail.svelte";
+  import Tooltip, { Wrapper } from "@smui/tooltip";
+  import EstudianteObsDetail from "./estudianteobsdetail.svelte";
   import type { Estudiante } from "../models/estudiante";
+  import { EstudianteObs } from "../models/estudianteobs";
   import axios from "axios/dist/axios";
 
   import { useLocation, useNavigate } from "svelte-navigator";
+  import { debug } from "svelte/internal";
+
+  export let studentId: number = 0;
+
   const navigate = useNavigate();
   const loc = useLocation();
-  $: console.log("catalogoestudiantes");
+  $: console.log("estudianteobss");
   $: console.log($loc);
 
   let urlpathprefix: string = location.protocol + "//" + location.host + "/v1/";
@@ -28,15 +34,16 @@
   let yesnoMsg: string = "";
   let idToRemove: number = 0;
 
-  let estudiante: Estudiante;
-  let estudiantes: Estudiante[] = [];
+  let estudianteObs: EstudianteObs;
+  let observaciones: EstudianteObs[] = [];
   let sort: keyof Estudiante = "id";
   // let sortDirection: Lowercase<keyof typeof SortValue> = "ascending";
   let sortDirection: "ascending" | "descending" | "none" | "other" = "ascending";
 
   let displayError: string = "";
+  let clonedEstudianteObs: EstudianteObs = EstudianteObs.newEmpty();
 
-  cargaEstudiantes();
+  cargaEstudianteObs(studentId);
 
   function closeDialogHandler(e: CustomEvent<{ action: string }>) {
     switch (e.detail.action) {
@@ -45,9 +52,31 @@
         break;
       case "aceptar":
         displayError = "Grabando!";
-        if (grabaEstudiante(estudiante)) {
-          displayError = "";
-        }
+        // Detectamos y corregimos un comportamiento erroneo que se
+        // presenta cuando editamos por primera vez una materia del
+        // alumno inmediatamente despues de desplegarse la lista de
+        // materias del alumno (no pudimos encontrar la causa)
+        // if (clonedEstudianteObs.materiaId === undefined) {
+        //   var found: boolean = false;
+        //   for (let i: number = 0; i < materias.length; i++) {
+        //     if (materias[i].id === clonedEstudianteObs.id) {
+        //       clonedEstudianteObs.materiaId = materias[i].materiaId;
+        //       console.log(
+        //         "Pudimos corregir caso de cuando el campo materiaId se vuelve undefined:" +
+        //           clonedEstudianteObs.materiaId
+        //       );
+        //       found = true;
+        //       break;
+        //     }
+        //   }
+        //   if (!found) {
+        //     console.log("No pudimos corregir caso de cuando el campo materiaId se vuelve undefined");
+        //   }
+        // }
+        //Fin de deteccion y correccion de error
+
+        grabaEstudianteObs(clonedEstudianteObs);
+        displayError = "";
         break;
       default:
         // This means the user clicked the scrim or pressed Esc to close the dialog.
@@ -58,111 +87,76 @@
   }
 
   function handleSort() {
-    estudiantes.sort((a, b) => {
+    observaciones.sort((a, b) => {
       const [aVal, bVal] = [a[sort], b[sort]][sortDirection === "ascending" ? "slice" : "reverse"]();
       if (typeof aVal === "string" && typeof bVal === "string") {
         return aVal.localeCompare(bVal);
       }
       return Number(aVal) - Number(bVal);
     });
-    estudiantes = estudiantes;
+    observaciones = observaciones;
   }
 
-  function cargaEstudiantes(): boolean {
+  function cargaEstudianteObs(studentId: number) {
     displayError = "Por favor espere...";
     // Vaciamos el array
-    estudiantes.splice(0, estudiantes.length);
+    observaciones.splice(0, observaciones.length);
 
     console.log("Cargando lista de estudiantes... ");
 
     httpClient
-      .get("students")
+      .get("studentobs?studentId=" + studentId)
       .then((response) => {
         displayError = "";
         console.log(response.data);
 
         // Llena la tabla
         if (!response.data.data) {
-          console.log("Empty students list");
+          console.log("Empty student materias list");
           return;
         }
-        let item: Estudiante;
+        let item: EstudianteObs;
         for (item of response.data.data) {
           item = corrigeFechas(item);
-          estudiantes.push(item);
+          observaciones.push(item);
         }
-        estudiantes = estudiantes;
+        observaciones = observaciones;
 
-        console.log("Lista de estudiantes:");
-        console.log(estudiantes);
+        console.log("Lista de estudiante-materias:");
+        console.log(observaciones);
       })
       .catch((error) => {
         displayError = error;
-        return false;
       });
-    return true;
   }
 
-  function corrigeFechas(item: Estudiante): Estudiante {
-    if (item.nacimiento && item.nacimiento.length > 10) {
-      item.nacimiento = item.nacimiento.substr(0, 10);
-    }
-    if (item.fechaInicio && item.fechaInicio.length > 10) {
-      item.fechaInicio = item.fechaInicio.substr(0, 10);
+  function corrigeFechas(item: EstudianteObs): EstudianteObs {
+    if (item.fecha && item.fecha.length > 10) {
+      item.fecha = item.fecha.substr(0, 10);
     }
     return item;
   }
 
-  function nuevoEstudiante() {
-    estudiante = {
-      id: 0,
-      nombres: "",
-      apellidos: "",
-      nacimiento: "2000-01-01",
-      sexo: "",
-      calle: "",
-      numeroExt: "",
-      numeroInt: "",
-      colonia: "",
-      municipio: "",
-      estado: "",
-      pais: "",
-      cp: "",
-      telCasa: "",
-      telCelular: "",
-      email: "",
-      fechaInicio: "2000-01-01",
-      observaciones: "",
-      activo: "S",
-    };
+  function nuevoEstudianteObs(studentId: number) {
+    estudianteObs = new EstudianteObs(0, studentId, "2000-01-01", "");
+    clonedEstudianteObs = EstudianteObs.guaranteedClone(estudianteObs);
+
     dialogOpen = true;
   }
 
-  function editEstudiante(id: number) {
-    estudiante = estudiantes.find((e) => e.id === id, "");
-    console.log(estudiante);
+  function editEstudianteObs(id: number) {
+    estudianteObs = observaciones.find((e) => e.id === id, "");
+    clonedEstudianteObs = EstudianteObs.guaranteedClone(estudianteObs);
+
+    console.log(clonedEstudianteObs);
     dialogOpen = true;
   }
 
-  function showMaterias(estudianteId: number) {
-    navigate("/estudiantematerias/" + estudianteId, {
-      replace: false,
-      state: {},
-    });
-  }
-
-  function showObservaciones(estudianteId: number) {
-    navigate("/estudianteobs/" + estudianteId, {
-      replace: false,
-      state: {},
-    });
-  }
-
-  function grabaEstudiante(est: Estudiante): boolean {
-    console.log("Grabando estudiante:" + JSON.stringify(est));
+  function grabaEstudianteObs(est: EstudianteObs) {
+    console.log("Grabando estudiante-materia:" + JSON.stringify(est));
 
     httpClient
-      .post("students", est)
+      .post("studentobs", est)
       .then((response) => {
         displayError = "";
         console.log(response.data);
@@ -171,30 +165,28 @@
 
         // Actualiza el elemento en la lista de estudiantes
         let found: boolean = false;
-        for (let i: number = 0; i < estudiantes.length; i++) {
-          if (estudiantes[i].id === est.id) {
-            estudiantes[i] = est;
-            estudiantes = estudiantes;
+        for (let i: number = 0; i < observaciones.length; i++) {
+          if (observaciones[i].id === est.id) {
+            observaciones[i] = est;
+            observaciones = observaciones;
             found = true;
             break;
           }
         }
         if (!found) {
-          estudiantes.push(est);
-          estudiantes = estudiantes;
+          observaciones.push(est);
+          observaciones = observaciones;
         }
       })
       .catch((error) => {
         displayError = error;
-        return false;
       });
-    return true;
   }
 
-  // ELIMINAR Estudiante
-  function eliminaEstudianteAsk(id: number, name: string) {
+  // ELIMINAR EstudianteObs
+  function eliminaEstudianteObsAsk(id: number) {
     idToRemove = id;
-    yesnoMsg = id + "-" + name;
+    yesnoMsg = id + "";
     yesnoDialogOpen = true;
   }
 
@@ -202,7 +194,7 @@
     switch (e.detail.action) {
       case "Si":
         displayError = "Borrando!";
-        eliminaEstudiante(idToRemove);
+        eliminaEstudianteObs(idToRemove);
         break;
       case "No":
         displayError = "Cancelado por el usuario.";
@@ -210,11 +202,11 @@
     }
   }
 
-  function eliminaEstudiante(id: number): boolean {
-    console.log("Eliminando estudiante id:" + id);
+  function eliminaEstudianteObs(id: number) {
+    console.log("Eliminando observación de estudiante id:" + id);
 
     httpClient
-      .delete("students/" + id)
+      .delete("studentobs/" + id)
       .then((response) => {
         displayError = "";
         console.log(response.data);
@@ -223,30 +215,30 @@
         if (!response.data.data.status) return;
 
         // Elimina el elemento en la lista de estudiantes
-        for (let i: number = 0; i < estudiantes.length; i++) {
-          if (estudiantes[i].id === id) {
-            estudiantes.splice(i, 1);
-            estudiantes = estudiantes;
+        for (let i: number = 0; i < observaciones.length; i++) {
+          if (observaciones[i].id === id) {
+            observaciones.splice(i, 1);
+            observaciones = observaciones;
             break;
           }
         }
       })
       .catch((error) => {
         displayError = error;
-        return false;
       });
-    return true;
   }
 </script>
 
-<h3>Catálogo de estudiantes</h3>
+<!-- {@debug estudianteObs}; -->
+
+<h3>Observaciones del estudiante</h3>
 <Button
   on:click={() => {
-    nuevoEstudiante();
+    nuevoEstudianteObs(studentId);
   }}
   variant="raised"
 >
-  <Label>Nuevo estudiante</Label>
+  <Label>Agregar observación</Label>
 </Button>
 
 <span class="dispErr">{displayError}</span>
@@ -273,69 +265,46 @@
       -->
       <Cell />
       <Cell />
-      <Cell />
-      <Cell />
-      <Cell numeric columnId="id">
-        <!-- For numeric columns, icon comes first. -->
+      <!-- <Cell numeric columnId="id">
+        < !-- For numeric columns, icon comes first. -- >
         <IconButton class="material-icons">arrow_upward</IconButton>
         <Label>ID</Label>
       </Cell>
-      <Cell columnId="nombres" style="width: 100%;">
-        <Label>Nombre(s)</Label>
+      <Cell numeric columnId="materiaId">
+        < !-- For numeric columns, icon comes first. -- >
+        <IconButton class="material-icons">arrow_upward</IconButton>
+        <Label>ID Materia</Label>
+      </Cell> -->
+      <Cell columnId="fecha">
+        <Label>Fecha</Label>
         <!-- For non-numeric columns, icon comes second. -->
         <IconButton class="material-icons">arrow_upward</IconButton>
       </Cell>
-      <Cell columnId="apellidos">
-        <Label>Apellido(s)</Label>
+      <Cell columnId="observacion" style="width: 100%;">
+        <Label>Observación:</Label>
         <IconButton class="material-icons">arrow_upward</IconButton>
-      </Cell>
-      <Cell columnId="email">
-        <Label>Email</Label>
-        <IconButton class="material-icons">arrow_upward</IconButton>
-      </Cell>
-      <!-- You can turn off sorting for a column. -->
-      <Cell columnId="fechaInicio">
-        <IconButton class="material-icons">arrow_upward</IconButton>
-        <Label>Fecha de Inicio</Label>
       </Cell>
     </Row>
   </Head>
   <Body>
-    {#each estudiantes as item (item.id)}
+    {#each observaciones as item (item.id)}
       <Row>
         <Cell>
-          <a href="#edit" on:click|preventDefault={() => editEstudiante(item.id)}
+          <a href="#edit" on:click|preventDefault={() => editEstudianteObs(item.id)}
             ><Icon component={Svg} viewBox="0 0 24 24" style="width:24px;height:24px;">
               <path Color="blue" fill="currentColor" d={mdiPencil} />
             </Icon></a
           >
         </Cell>
         <Cell>
-          <a href="#delete" on:click|preventDefault={() => eliminaEstudianteAsk(item.id, item.apellidos + " / " + item.nombres)}
+          <a href="#delete" on:click|preventDefault={() => eliminaEstudianteObsAsk(item.id)}
             ><Icon component={Svg} viewBox="0 0 24 24" style="width:24px;height:24px;">
               <path Color="red" fill="currentColor" d={mdiTrashCanOutline} />
             </Icon></a
           >
         </Cell>
-        <Cell>
-          <a href="#materias" on:click|preventDefault={() => showMaterias(item.id)}
-            ><Icon component={Svg} viewBox="0 0 24 24" style="width:24px;height:24px;">
-              <path Color="red" fill="currentColor" d={mdiBook} />
-            </Icon></a
-          >
-        </Cell>
-        <Cell>
-          <a href="#obs" on:click|preventDefault={() => showObservaciones(item.id)}
-            ><Icon component={Svg} viewBox="0 0 24 24" style="width:24px;height:24px;">
-              <path Color="red" fill="currentColor" d={mdiNoteTextOutline} />
-            </Icon></a
-          >
-        </Cell>
-        <Cell numeric>{item.id}</Cell>
-        <Cell>{item.nombres}</Cell>
-        <Cell>{item.apellidos}</Cell>
-        <Cell>{item.email}</Cell>
-        <Cell>{item.fechaInicio}</Cell>
+        <Cell>{item.fecha}</Cell>
+        <Cell>{item.observacion}</Cell>
       </Row>
     {/each}
   </Body>
@@ -353,7 +322,7 @@
     <IconButton action="close" class="material-icons">close</IconButton>
   </Header>
   <Content id="fullscreen-content">
-    <EstudianteDetail bind:estudiante />
+    <EstudianteObsDetail bind:estudianteObs={clonedEstudianteObs} />
   </Content>
   <Actions>
     <Button action="cancelar">
@@ -372,10 +341,10 @@
   on:MDCDialog:closed={closeYesnoDialogHandler}
 >
   <Header>
-    <Title id="fullscreen-title">Eliminar estudiante</Title>
+    <Title id="fullscreen-title">Eliminar observación del estudiante</Title>
   </Header>
   <Content id="fullscreen-content">
-    <Label>¿Desea eliminar el estudiante [{yesnoMsg}]?</Label>
+    <Label>¿Desea eliminar la observación [{yesnoMsg}] del estudiante seleccionado?</Label>
   </Content>
   <Actions>
     <Button action="No" defaultAction>

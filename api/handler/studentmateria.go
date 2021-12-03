@@ -58,8 +58,8 @@ func listStudentMaterias(service studentmateria.UseCase) http.Handler {
 				StudentId:     d.StudentId,
 				MateriaId:     d.MateriaId,
 				MateriaNombre: d.MateriaNombre,
-				Inicio:        d.Inicio,
-				Fin:           d.Fin,
+				Inicio:        jd.JsonDate(d.Inicio),
+				Fin:           jd.JsonDate(d.Fin),
 				Observaciones: d.Observaciones,
 			})
 		}
@@ -115,8 +115,8 @@ func createStudentMateria(service studentmateria.UseCase) http.Handler {
 			StudentId:     input.StudentId,
 			MateriaId:     input.MateriaId,
 			MateriaNombre: materiaNombre,
-			Inicio:        input.Inicio.ToTime(),
-			Fin:           input.Fin.ToTime(),
+			Inicio:        input.Inicio,
+			Fin:           input.Fin,
 			Observaciones: input.Observaciones,
 		}
 		sendOkResponse(w, http.StatusOK, toJ)
@@ -146,8 +146,8 @@ func getStudentMateria(service studentmateria.UseCase) http.Handler {
 			StudentId:     data.StudentId,
 			MateriaId:     data.MateriaId,
 			MateriaNombre: data.MateriaNombre,
-			Inicio:        data.Inicio,
-			Fin:           data.Fin,
+			Inicio:        jd.JsonDate(data.Inicio),
+			Fin:           jd.JsonDate(data.Fin),
 			Observaciones: data.Observaciones,
 		}
 		sendOkResponse(w, http.StatusOK, toJ)

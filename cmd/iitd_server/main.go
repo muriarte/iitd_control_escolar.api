@@ -13,9 +13,9 @@ import (
 	"iitd_control_escolar.api/infrastructure/repository"
 	"iitd_control_escolar.api/usecase/maestro"
 	"iitd_control_escolar.api/usecase/materia"
-	"iitd_control_escolar.api/usecase/observacion"
 	"iitd_control_escolar.api/usecase/student"
 	"iitd_control_escolar.api/usecase/studentmateria"
+	"iitd_control_escolar.api/usecase/studentobs"
 
 	//"github.com/prometheus/client_golang/prometheus/promhttp"
 
@@ -47,14 +47,14 @@ func main() {
 	maestroRepo := repository.NewMaestroSQLite(db) //repository.NewStudentMySQL(db)
 	maestroService := maestro.NewService(maestroRepo)
 
-	observacionRepo := repository.NewObservacionSQLite(db) //repository.NewStudentMySQL(db)
-	observacionService := observacion.NewService(observacionRepo)
-
 	materiaRepo := repository.NewMateriaSQLite(db) //repository.NewStudentMySQL(db)
 	materiaService := materia.NewService(materiaRepo)
 
 	studentMateriaRepo := repository.NewStudentMateriaSQLite(db) //repository.NewStudentMySQL(db)
 	studentMateriaService := studentmateria.NewService(studentMateriaRepo)
+
+	studentObsRepo := repository.NewStudentObsSQLite(db) //repository.NewStudentMySQL(db)
+	studentObsService := studentobs.NewService(studentObsRepo)
 
 	r := mux.NewRouter()
 	r.Use(mux.CORSMethodMiddleware(r))
@@ -70,8 +70,8 @@ func main() {
 	handler.MakeStudentHandlers(r, studentService)
 	handler.MakeMaestroHandlers(r, maestroService)
 	handler.MakeMateriaHandlers(r, materiaService)
-	handler.MakeObservacionHandlers(r, observacionService)
 	handler.MakeStudentMateriaHandlers(r, studentMateriaService)
+	handler.MakeStudentObsHandlers(r, studentObsService)
 
 	http.Handle("/", r)
 	r.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {

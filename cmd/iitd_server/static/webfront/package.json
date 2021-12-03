@@ -31,6 +31,7 @@
     "@smui/select": "^5.0.1",
     "@smui/snackbar": "^5.0.1",
     "@smui/textfield": "^5.0.1",
+    "@smui/tooltip": "^5.0.1",
     "@tsconfig/svelte": "^2.0.0",
     "axios": "^0.21.4",
     "rollup": "^2.3.4",

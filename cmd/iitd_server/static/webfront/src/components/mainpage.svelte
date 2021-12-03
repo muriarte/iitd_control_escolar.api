@@ -10,6 +10,7 @@
   import CatalogoMaestros from "./catalogomaestros.svelte";
   import CatalogoMaterias from "./catalogomaterias.svelte";
   import EstudianteMaterias from "./estudiantematerias.svelte";
+  import EstudianteObs from "./estudianteobs.svelte";
 
   const modCatEstudiantes: string = "CatalogoEstudiantes";
   const modCatMaestros: string = "CatalogoMaestros";
@@ -123,6 +124,9 @@
         </Route>
         <Route path="estudiantematerias/:estudianteId" let:params>
           <EstudianteMaterias studentId={parseInt(params.estudianteId)} />
+        </Route>
+        <Route path="estudianteobs/:estudianteId" let:params>
+          <EstudianteObs studentId={parseInt(params.estudianteId)} />
         </Route>
       </div>
     </Router>

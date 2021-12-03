@@ -37,7 +37,7 @@
   let materias: EstudianteMateria[] = [];
   let sort: keyof Estudiante = "id";
   // let sortDirection: Lowercase<keyof typeof SortValue> = "ascending";
-  let sortDirection: string | number | symbol = "ascending";
+  let sortDirection: "ascending" | "descending" | "none" | "other" = "ascending";
 
   let displayError: string = "";
   let clonedEstudianteMateria: EstudianteMateria = EstudianteMateria.newEmpty();

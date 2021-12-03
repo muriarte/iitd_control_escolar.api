@@ -7,23 +7,23 @@ import (
 	"iitd_control_escolar.api/entity"
 )
 
-const ObservacionesFieldList = `studentid, fecha, observacion`
+const StudentObsFieldList = `studentid, fecha, observacion`
 
-//ObservacionSQLite mysql repo
-type ObservacionSQLite struct {
+//StudentObsSQLite mysql repo
+type StudentObsSQLite struct {
 	db *sql.DB
 }
 
-//NewObservacionSQLite create new repository
-func NewObservacionSQLite(db *sql.DB) *ObservacionSQLite {
-	return &ObservacionSQLite{
+//NewStudentObsSQLite create new repository
+func NewStudentObsSQLite(db *sql.DB) *StudentObsSQLite {
+	return &StudentObsSQLite{
 		db: db,
 	}
 }
 
 //Observaciones an observacion
-func (r *ObservacionSQLite) Create(e *entity.Observacion) (int, error) {
-	var sqlStr = fmt.Sprintf("insert into observaciones (%s) values(?,?,?)", ObservacionesFieldList)
+func (r *StudentObsSQLite) Create(e *entity.StudentObs) (int, error) {
+	var sqlStr = fmt.Sprintf("insert into observaciones (%s) values(?,?,?)", StudentObsFieldList)
 	stmt, err := r.db.Prepare(sqlStr)
 	if err != nil {
 		return e.ID, err
@@ -50,13 +50,13 @@ func (r *ObservacionSQLite) Create(e *entity.Observacion) (int, error) {
 }
 
 //Get an observacion
-func (r *ObservacionSQLite) Get(id int) (*entity.Observacion, error) {
-	var sqlStr = fmt.Sprintf("select id, %s from observaciones where id = ?", ObservacionesFieldList)
+func (r *StudentObsSQLite) Get(id int) (*entity.StudentObs, error) {
+	var sqlStr = fmt.Sprintf("select id, %s from observaciones where id = ?", StudentObsFieldList)
 	stmt, err := r.db.Prepare(sqlStr)
 	if err != nil {
 		return nil, err
 	}
-	var b entity.Observacion
+	var b entity.StudentObs
 	rows, err := stmt.Query(id)
 	if err != nil {
 		return nil, err
@@ -77,9 +77,9 @@ func (r *ObservacionSQLite) Get(id int) (*entity.Observacion, error) {
 }
 
 //Update an observacion
-func (r *ObservacionSQLite) Update(e *entity.Observacion) error {
+func (r *StudentObsSQLite) Update(e *entity.StudentObs) error {
 	//	e.UpdatedAt = time.Now()
-	_, err := r.db.Exec(`update observaciones set studentId=?, observacion=? where id = ?`,
+	_, err := r.db.Exec(`update observaciones set studentId=?, fecha=?, observacion=? where id = ?`,
 		e.StudentId,
 		e.Fecha,
 		e.Observacion,
@@ -92,20 +92,20 @@ func (r *ObservacionSQLite) Update(e *entity.Observacion) error {
 }
 
 //Search observaciones
-func (r *ObservacionSQLite) Search(studentId int) ([]*entity.Observacion, error) {
+func (r *StudentObsSQLite) Search(studentId int) ([]*entity.StudentObs, error) {
 	query := ""
 	connector := "where "
 	if studentId > 0 {
 		query = fmt.Sprintf("%s%sstudentId = %d", query, connector, studentId)
 		connector = " and "
 	}
-	var sqlStr = fmt.Sprintf("select id,%s from observaciones %s", ObservacionesFieldList, query)
+	var sqlStr = fmt.Sprintf("select id,%s from observaciones %s order by studentid, fecha", StudentObsFieldList, query)
 	stmt, err := r.db.Prepare(sqlStr)
 	if err != nil {
 		return nil, err
 	}
-	var observaciones []*entity.Observacion
-	rows, err := stmt.Query("%" + query + "%")
+	var observaciones []*entity.StudentObs
+	rows, err := stmt.Query()
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +115,7 @@ func (r *ObservacionSQLite) Search(studentId int) ([]*entity.Observacion, error)
 	}()
 
 	for rows.Next() {
-		var b entity.Observacion
+		var b entity.StudentObs
 		err = observacionesFullRowScan(rows, &b)
 		if err != nil {
 			return nil, err
@@ -127,13 +127,13 @@ func (r *ObservacionSQLite) Search(studentId int) ([]*entity.Observacion, error)
 }
 
 //List observaciones
-func (r *ObservacionSQLite) List() ([]*entity.Observacion, error) {
-	var sqlStr = fmt.Sprintf("select id, %s from observaciones", ObservacionesFieldList)
+func (r *StudentObsSQLite) List() ([]*entity.StudentObs, error) {
+	var sqlStr = fmt.Sprintf("select id, %s from observaciones order by studentid, fecha", StudentObsFieldList)
 	stmt, err := r.db.Prepare(sqlStr)
 	if err != nil {
 		return nil, err
 	}
-	var observaciones []*entity.Observacion
+	var observaciones []*entity.StudentObs
 	rows, err := stmt.Query()
 	if err != nil {
 		return nil, err
@@ -144,7 +144,7 @@ func (r *ObservacionSQLite) List() ([]*entity.Observacion, error) {
 	}()
 
 	for rows.Next() {
-		var b entity.Observacion
+		var b entity.StudentObs
 		err = observacionesFullRowScan(rows, &b)
 		if err != nil {
 			return nil, err
@@ -155,7 +155,7 @@ func (r *ObservacionSQLite) List() ([]*entity.Observacion, error) {
 }
 
 //Delete an observacion
-func (r *ObservacionSQLite) Delete(id int) error {
+func (r *StudentObsSQLite) Delete(id int) error {
 	_, err := r.db.Exec("delete from observaciones where id = ?", id)
 	if err != nil {
 		return err
@@ -163,7 +163,9 @@ func (r *ObservacionSQLite) Delete(id int) error {
 	return nil
 }
 
-func observacionesFullRowScan(rows *sql.Rows, b *entity.Observacion) error {
+func observacionesFullRowScan(rows *sql.Rows, b *entity.StudentObs) error {
 	err := rows.Scan(&b.ID, &b.StudentId, &b.Fecha, &b.Observacion)
+	// x := b.Fecha.Format("2006-01-02")
+	// fmt.Println(x)
 	return err
 }

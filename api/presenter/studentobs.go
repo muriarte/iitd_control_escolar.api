@@ -5,7 +5,7 @@ import (
 )
 
 //Student data
-type Observacion struct {
+type StudentObs struct {
 	ID          int         `json:"id"`
 	StudentId   int         `json:"studentId"`
 	Fecha       jd.JsonDate `json:"fecha"`
