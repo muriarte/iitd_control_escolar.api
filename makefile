@@ -12,6 +12,10 @@ BIN_DIR = $(PWD)/bin
 clean:
 	rm -rf bin/*
 
+buildwin:
+	buildwin.bat
+.PHONY: buildwin
+
 dependencies:
 	go mod download
 
